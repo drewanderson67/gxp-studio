@@ -4,7 +4,7 @@ import asyncio, sys
 from playwright.async_api import async_playwright
 U = 'http://localhost:8080/index.html'
 ROUTES = ['dashboard','docs','doc/DOC-0001','changes','change/CR-0001','defects','defect/BUG-0001','tests','run/TR-0002',
-          'deviations','dev/DEV-0001','dev/DEV-0002','dev/DEV-0003','training','trace','code/CV-0001','audit','settings','more']
+          'validation','deviations','dev/DEV-0001','dev/DEV-0002','dev/DEV-0003','training','trace','code/CV-0001','audit','settings','more']
 FAIL = []
 def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + (f'  [{extra}]' if extra else ''))
@@ -55,6 +55,18 @@ async def main():
         await user('Morgan Lee'); await pg.goto(U + '#/dev/DEV-0003'); await pg.click('[data-act=devAdv]'); await sign('Closed')
         check('QA closes with signature', await dev('status') == 'Closed' and await dev('signatures.length') == 2)
         check('audit chain intact after flows', await ev('verifyAudit().ok'))
+        # validation summary report
+        await pg.goto(U + '#/validation'); await pg.wait_for_timeout(150)
+        check('validation verdict blocked on seed data', 'release blocked' in await pg.locator('.content').inner_text())
+        await user('Alex Rivera'); await pg.goto(U + '#/validation'); await pg.click('[data-act=vsrGen]'); await pg.wait_for_timeout(250)
+        check('VSR generated as controlled draft', await ev("S.docs[0].type==='VSR'&&S.docs[0].status==='Draft'&&!!S.docs[0].vsr") and '#/doc/' in pg.url)
+        check('VSR basis stable after generation', await ev("vsrAssess().basis===S.docs[0].vsr.basis"))
+        check('VSR content has RTM + conclusion', await ev("/Requirements traceability/.test(S.docs[0].content)&&/release blocked/.test(S.docs[0].content)"))
+        await pg.click('[data-act=docSubmit]'); await pg.wait_for_timeout(150)
+        await user('Priya Shah'); await pg.click('[data-act=docReview]'); await sign('Reviewed VSR')
+        await user('Morgan Lee'); await pg.click('[data-act=docApprove]'); await pg.wait_for_timeout(150)
+        check('QA cannot approve a blocked VSR', await ev("S.docs[0].status")=='In Review' and await pg.locator('#sgP').count()==0, await toast())
+        check('stale VSR blocked', 'changed' in await ev("(()=>{const d=clone(S.docs[0]);d.vsr.verdict=VSR_EXC;d.vsr.basis='x';return vsrBlock(d)})()"))
         # v1.0 workspace upgrade
         await ev("(()=>{const s=JSON.parse(localStorage.getItem(STORE_KEY));delete s.deviations;delete s.training;localStorage.setItem(STORE_KEY,JSON.stringify(s))})()")
         await pg.reload(); await pg.wait_for_timeout(300)
