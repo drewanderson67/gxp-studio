@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GxP Studio — Validation, Change Control &amp; Test Automation</title>
+<meta name="description" content="GxP documentation, code migrations, bug fixes/CAPA and test automation with traceability, audit trail and Part 11 e-signatures.">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="GxP Studio">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234f46e5'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M18 33l9 9 19-20' stroke='white' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>:root{
+  --bg:#f4f6fb;--panel:#ffffff;--panel2:#f8f9fc;--ink:#14182b;--ink2:#4a5170;--muted:#7a819c;--line:#e3e6f0;
+  --brand:#4f46e5;--brand2:#7c3aed;--brandSoft:#eef0ff;--ok:#0f9d6b;--okSoft:#e3f7ef;--warn:#c27a00;--warnSoft:#fff4dc;
+  --bad:#d23a4a;--badSoft:#fde8ea;--info:#0b7cc4;--infoSoft:#e2f2fc;--shadow:0 1px 2px rgba(20,24,43,.06),0 6px 20px rgba(20,24,43,.06);
+  --r:14px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --nav-h:64px;--safe-b:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not(.light){
+  --bg:#0d1020;--panel:#151a30;--panel2:#1a2038;--ink:#e8eaf6;--ink2:#b4b9d6;--muted:#8389a8;--line:#272e4c;
+  --brandSoft:#24275a;--okSoft:#0f3328;--warnSoft:#3a2c0b;--badSoft:#3d1820;--infoSoft:#0d2c42;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}}
+:root.dark{--bg:#0d1020;--panel:#151a30;--panel2:#1a2038;--ink:#e8eaf6;--ink2:#b4b9d6;--muted:#8389a8;--line:#272e4c;
+  --brandSoft:#24275a;--okSoft:#0f3328;--warnSoft:#3a2c0b;--badSoft:#3d1820;--infoSoft:#0d2c42;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+a{color:var(--brand);text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;line-height:1.2}
+h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:17px;font-weight:650}
+h3{font-size:15px;font-weight:650}
+code,.mono{font-family:var(--mono);font-size:12.5px}
+.app{display:flex;min-height:100vh}
+/* sidebar */
+.side{width:248px;flex:0 0 248px;background:var(--panel);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:16px 12px}
+.logo{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+.logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;box-shadow:0 4px 14px rgba(79,70,229,.35)}
+.logo b{font-size:16px;display:block}.logo small{color:var(--muted);font-size:11.5px}
+.nav{display:flex;flex-direction:column;gap:2px;overflow:auto}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:var(--ink2);font-weight:550;font-size:14px}
+.nav a .ic{width:20px;text-align:center;font-size:15px}
+.nav a:hover{background:var(--panel2)}
+.nav a.on{background:var(--brandSoft);color:var(--brand)}
+.nav .sec{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:14px 10px 4px}
+.nav .cnt{margin-left:auto;font-size:11px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:0 7px;color:var(--muted)}
+.side .foot{margin-top:auto;padding:10px 8px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:10px 22px;min-height:58px}
+.top .crumb{font-weight:650;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .sp{flex:1}
+.userchip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:4px 10px 4px 4px;cursor:pointer}
+.av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700;flex:0 0 28px}
+.userchip select{border:0;background:transparent;font-size:13px;font-weight:600;max-width:150px;cursor:pointer;outline:none}
+.content{padding:22px;max-width:1280px;width:100%;margin:0 auto}
+/* mobile nav */
+.tabbar{display:none}
+@media (max-width:860px){
+  .side{display:none}
+  .top{padding:8px 14px;padding-top:max(8px,env(safe-area-inset-top))}
+  .content{padding:14px 12px calc(var(--nav-h) + var(--safe-b) + 18px)}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--panel);border-top:1px solid var(--line);height:calc(var(--nav-h) + var(--safe-b));padding-bottom:var(--safe-b)}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--muted)}
+  .tabbar a .ic{font-size:19px;line-height:1}
+  .tabbar a.on{color:var(--brand)}
+  .userchip select{max-width:96px}
+  .hide-m{display:none!important}
+  h1{font-size:19px}
+}
+/* generic */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+.card.flat{box-shadow:none}
+.card+.card{margin-top:14px}
+.card h2{margin-bottom:10px}
+.ph{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.ph .t{flex:1;min-width:200px}
+.ph p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dash2{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.grid>.card{margin:0}
+@media (max-width:700px){.g2,.g3,.dash2{grid-template-columns:1fr}}
+.kpi{padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.kpi .v{font-size:28px;font-weight:750;letter-spacing:-.02em;margin-top:4px}
+.kpi .s{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.kpi .bar{height:6px;border-radius:6px;background:var(--panel2);margin-top:10px;overflow:hidden}
+.kpi .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 13px;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap;color:var(--ink);min-height:38px}
+.btn:hover{border-color:color-mix(in srgb,var(--brand) 40%,var(--line))}
+.btn.pri{background:linear-gradient(135deg,var(--brand),var(--brand2));border-color:transparent;color:#fff;box-shadow:0 3px 10px rgba(79,70,229,.3)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.bad{background:var(--badSoft);border-color:transparent;color:var(--bad)}
+.btn.bad.armed{background:var(--bad);color:#fff}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.sm{padding:4px 9px;font-size:12.5px;min-height:30px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:650;padding:2px 9px;border-radius:20px;background:var(--panel2);color:var(--ink2);border:1px solid var(--line);white-space:nowrap}
+.pill.ok{background:var(--okSoft);color:var(--ok);border-color:transparent}
+.pill.warn{background:var(--warnSoft);color:var(--warn);border-color:transparent}
+.pill.bad{background:var(--badSoft);color:var(--bad);border-color:transparent}
+.pill.info{background:var(--infoSoft);color:var(--info);border-color:transparent}
+.pill.brand{background:var(--brandSoft);color:var(--brand);border-color:transparent}
+.muted{color:var(--muted)}.small{font-size:12.5px}.b{font-weight:650}
+.list{display:flex;flex-direction:column}
+.item{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.item:last-child{border-bottom:0}
+.item:hover{background:var(--panel2)}
+.item .id{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:74px}
+.item .main1{flex:1;min-width:0}
+.item .ttl{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .meta{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.card.p0{padding:0;overflow:hidden}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{flex:1;min-width:160px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 12px;outline:none}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;overflow:auto;max-width:100%}
+.seg button{border:0;background:transparent;padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--panel);color:var(--brand);box-shadow:var(--shadow)}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.inp,select.inp,textarea.inp{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;outline:none;width:100%;font-weight:400;font-size:14px;color:var(--ink)}
+.inp:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brandSoft)}
+textarea.inp{min-height:90px;resize:vertical}
+textarea.code,.codebox{font-family:var(--mono);font-size:12.5px;line-height:1.5;tab-size:2;white-space:pre;min-height:260px}
+.codebox{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow:auto;max-height:440px;margin:0}
+.fields{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;font-size:13.5px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:550}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel2);position:sticky;top:0}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tblwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow:auto}
+.tabs button{border:0;background:none;padding:9px 12px;font-weight:600;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+.steps{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 2px}
+.steps span{font-size:11.5px;font-weight:650;padding:4px 9px;border-radius:20px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.steps span.done{background:var(--okSoft);color:var(--ok);border-color:transparent}
+.steps span.cur{background:var(--brand);color:#fff;border-color:transparent}
+.insight{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:flex-start}
+.insight:last-child{border-bottom:0}
+.insight .dot{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 30px;font-size:14px;font-weight:800}
+.insight.bad .dot{background:var(--badSoft);color:var(--bad)}.insight.warn .dot{background:var(--warnSoft);color:var(--warn)}.insight.ok .dot{background:var(--okSoft);color:var(--ok)}.insight.info .dot{background:var(--infoSoft);color:var(--info)}
+.insight .tx{flex:1;font-size:13.5px}.insight .tx b{display:block;font-size:14px}
+/* diff */
+.diff{font-family:var(--mono);font-size:12px;line-height:1.55;border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:520px;background:var(--panel)}
+.diff .ln{display:flex;white-space:pre}
+.diff .ln .n{width:42px;flex:0 0 42px;text-align:right;padding-right:8px;color:var(--muted);user-select:none;background:var(--panel2)}
+.diff .ln .c{padding:0 10px;flex:1}
+.diff .add{background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.diff .del{background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.diff .add .c::before{content:"+ ";color:var(--ok)}.diff .del .c::before{content:"- ";color:var(--bad)}.diff .eq .c::before{content:"  "}
+.diff .gap{color:var(--muted);background:var(--panel2);padding:2px 10px;font-style:italic}
+/* test console */
+.console{background:#0b0e1c;color:#d6daf5;border-radius:12px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.6;max-height:420px;overflow:auto;white-space:pre-wrap}
+.console .p{color:#4ade80}.console .f{color:#f87171}.console .d{color:#8b93c4}.console .h{color:#a5b4fc;font-weight:700}
+.res{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;font-size:12px;font-weight:800}
+.res.pass{background:var(--okSoft);color:var(--ok)}.res.fail{background:var(--badSoft);color:var(--bad)}.res.none{background:var(--panel2);color:var(--muted)}.res.err{background:var(--warnSoft);color:var(--warn)}
+/* doc */
+.doc{max-width:860px}
+.docpaper{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px 32px;line-height:1.6}
+.docpaper h1{font-size:22px;margin:0 0 12px}.docpaper h2{font-size:17px;margin:22px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}.docpaper h3{margin:16px 0 6px}
+.docpaper table{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0}
+.docpaper th,.docpaper td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.docpaper th{background:var(--panel2)}
+.docpaper ul{padding-left:20px}
+.docpaper code{background:var(--panel2);padding:1px 5px;border-radius:5px}
+.dochead{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:18px;font-size:12.5px}
+.dochead div{padding:8px 10px;border-right:1px solid var(--line)}.dochead div:last-child{border-right:0}
+.dochead span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+@media (max-width:700px){.docpaper{padding:18px 16px}.dochead{grid-template-columns:1fr 1fr}.dochead div:nth-child(2){border-right:0}.dochead div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+.sig{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px dashed color-mix(in srgb,var(--ok) 50%,var(--line));border-radius:10px;background:var(--okSoft);margin-top:8px;font-size:13px}
+.sig .seal{font-size:20px}
+.timeline{position:relative;padding-left:18px}
+.timeline:before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.timeline .ev{position:relative;padding:0 0 12px;font-size:13px}
+.timeline .ev:before{content:"";position:absolute;left:-17px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand);border:2px solid var(--panel)}
+.timeline .ev .when{color:var(--muted);font-size:12px}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(10,12,28,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fade .15s}
+.modal{background:var(--panel);border-radius:18px;width:100%;max-width:560px;max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);border:1px solid var(--line)}
+.modal.wide{max-width:860px}
+.modal .mh{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--panel);z-index:1}
+.modal .mh h2{flex:1;margin:0}
+.modal .mb{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.modal .mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--panel)}
+@media (max-width:700px){.scrim{align-items:flex-end;padding:0}.modal{border-radius:18px 18px 0 0;max-height:92vh}.modal .mf{padding-bottom:calc(12px + var(--safe-b))}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.err{color:var(--bad);font-size:13px;font-weight:600}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#14182b;color:#fff;padding:10px 16px;border-radius:12px;font-size:13.5px;font-weight:550;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:90vw;animation:fade .2s}
+@media (max-width:860px){.toast{bottom:calc(var(--nav-h) + var(--safe-b) + 14px)}}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.chk:last-child{border-bottom:0}
+.chk input{width:18px;height:18px;margin-top:1px;accent-color:var(--brand);flex:0 0 18px}
+.ring{--p:0;width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--panel2) 0);display:grid;place-items:center;flex:0 0 120px}
+.ring div{width:92px;height:92px;border-radius:50%;background:var(--panel);display:grid;place-items:center;text-align:center;font-weight:750;font-size:22px}
+.ring small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bars .br{display:grid;grid-template-columns:110px 1fr 40px;gap:10px;align-items:center;font-size:12.5px}
+.bars .tr{height:10px;background:var(--panel2);border-radius:6px;overflow:hidden;display:flex}
+.bars .tr i{display:block;height:100%}
+.matrix td.cell{text-align:center}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.hashv{font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all}
+.fab{display:none}
+@media (max-width:860px){.fab{display:grid;position:fixed;right:16px;bottom:calc(var(--nav-h) + var(--safe-b) + 14px);width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:26px;place-items:center;z-index:25;box-shadow:0 8px 22px rgba(79,70,229,.45);border:0}}
+@media print{
+  .side,.top,.tabbar,.fab,.noprint{display:none!important}
+  body{background:#fff;color:#000}.content{padding:0;max-width:none}.docpaper{border:0;padding:0}.card{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><div class="mark">✓</div><div><b>GxP Studio</b><small>Validate · Migrate · Fix · Test</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">Part 11 · Annex 11 · GAMP 5<br><span id="ver"></span> · offline-ready</div>
+  </aside>
+  <div class="main">
+    <header class="top"><div class="crumb" id="crumb"></div><div class="sp"></div><span class="pill hide-m" id="roleTag"></span><label class="userchip" id="user"></label></header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar"></nav>
+<button class="fab" id="fab" aria-label="New">+</button>
+<script>'use strict';
+const APP_VERSION='1.0.0';
+const STORE_KEY='gxps.v1';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAY=864e5;
+const nowISO=()=>new Date().toISOString();
+const fmtD=d=>d?new Date(d).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'—';
+const fmtDT=d=>d?new Date(d).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+const fmtUTC=d=>d?new Date(d).toISOString().replace('T',' ').slice(0,19)+' UTC':'—';
+const ago=d=>{const s=(Date.now()-new Date(d))/1000;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';const dd=Math.floor(s/86400);return dd<60?dd+'d ago':fmtD(d)};
+const daysUntil=d=>Math.round((new Date(d)-Date.now())/DAY);
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ---------- SHA-256 (sync, pure JS) ---------- */
+const sha256=(()=>{const K=new Uint32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+return function(str){const b=new TextEncoder().encode(String(str));const l=b.length,bl=l*8;const n=((l+9+63)>>6)<<6;const m=new Uint8Array(n);m.set(b);m[l]=0x80;const dv=new DataView(m.buffer);dv.setUint32(n-4,bl>>>0);dv.setUint32(n-8,Math.floor(bl/2**32));
+let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;const w=new Uint32Array(64);const r=(x,k)=>(x>>>k)|(x<<(32-k));
+for(let o=0;o<n;o+=64){for(let i=0;i<16;i++)w[i]=dv.getUint32(o+i*4);for(let i=16;i<64;i++){const s0=r(w[i-15],7)^r(w[i-15],18)^(w[i-15]>>>3),s1=r(w[i-2],17)^r(w[i-2],19)^(w[i-2]>>>10);w[i]=(w[i-16]+s0+w[i-7]+s1)|0}
+let a=h0,b2=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;for(let i=0;i<64;i++){const S1=r(e,6)^r(e,11)^r(e,25),ch=(e&f)^(~e&g),t1=(h+S1+ch+K[i]+w[i])|0,S0=r(a,2)^r(a,13)^r(a,22),mj=(a&b2)^(a&c)^(b2&c),t2=(S0+mj)|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b2;b2=a;a=(t1+t2)|0}
+h0=(h0+a)|0;h1=(h1+b2)|0;h2=(h2+c)|0;h3=(h3+d)|0;h4=(h4+e)|0;h5=(h5+f)|0;h6=(h6+g)|0;h7=(h7+h)|0}
+return [h0,h1,h2,h3,h4,h5,h6,h7].map(x=>(x>>>0).toString(16).padStart(8,'0')).join('')}})();
+const short=h=>h?h.slice(0,12):'';
+
+/* ---------- state ---------- */
+let S=null;
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S))}catch(e){toast('Storage full — export your data')}}
+function load(){try{const j=localStorage.getItem(STORE_KEY);if(j){S=JSON.parse(j);return true}}catch(e){}return false}
+function nextId(prefix){S.seq[prefix]=(S.seq[prefix]||0)+1;return prefix+'-'+String(S.seq[prefix]).padStart(4,'0')}
+const me=()=>S.users.find(u=>u.id===S.currentUser)||S.users[0];
+const userName=id=>(S.users.find(u=>u.id===id)||{name:id||'—'}).name;
+const userColor=id=>({u1:'#4f46e5',u2:'#0f9d6b',u3:'#d23a4a',u4:'#c27a00'}[id]||'#7c3aed');
+const initials=n=>String(n).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+const avatar=id=>`<span class="av" style="background:${userColor(id)}">${initials(userName(id))}</span>`;
+const findAny=id=>{if(!id)return null;const p=id.split('-')[0];const col={DOC:'docs',REQ:'reqs',TC:'tests',TR:'runs',CR:'changes',BUG:'defects',CAPA:'defects',CV:'code'}[p];return col?S[col].find(x=>x.id===id):null};
+const routeFor=id=>{const p=String(id).split('-')[0];return {DOC:'#/doc/',REQ:'#/trace?req=',TC:'#/test/',TR:'#/run/',CR:'#/change/',BUG:'#/defect/',CV:'#/code/'}[p]+id};
+const link=id=>id?`<a href="${routeFor(id)}" class="mono">${esc(id)}</a>`:'—';
+
+/* ---------- audit trail (hash chained) ---------- */
+function audit(action,entity,detail,userId){
+  const prev=S.audit.length?S.audit[S.audit.length-1].hash:'0'.repeat(64);
+  const e={seq:S.audit.length+1,at:S._clock||nowISO(),user:userId||S.currentUser,action,entity,detail:detail||'',prev};
+  e.hash=sha256(JSON.stringify([e.seq,e.at,e.user,e.action,e.entity,e.detail,e.prev]));
+  S.audit.push(e);
+}
+function verifyAudit(){let prev='0'.repeat(64);for(const e of S.audit){const h=sha256(JSON.stringify([e.seq,e.at,e.user,e.action,e.entity,e.detail,e.prev]));if(e.prev!==prev||h!==e.hash)return {ok:false,at:e.seq};prev=e.hash}return {ok:true,n:S.audit.length,head:prev}}
+function recordHash(o){const c=clone(o);delete c.signatures;delete c.history;return sha256(JSON.stringify(c))}
+function hist(o,text){(o.history=o.history||[]).push({at:nowISO(),by:S.currentUser,text})}
+
+/* ---------- UI helpers ---------- */
+function toast(msg){$$('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function modal(title,body,foot,wide){closeModal();const s=document.createElement('div');s.className='scrim';s.innerHTML=`<div class="modal ${wide?'wide':''}" role="dialog"><div class="mh"><h2>${esc(title)}</h2><button class="btn ghost sm" data-x>✕</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div>`;s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-x]'))closeModal()});document.body.appendChild(s);const f=s.querySelector('input:not([type=checkbox]),textarea,select');if(f&&matchMedia('(min-width:861px)').matches)f.focus();return s}
+function closeModal(){$$('.scrim').forEach(x=>x.remove())}
+/* two-click confirm (no confirm() — blocked in preview iframes) */
+function armed(btn,fn,label='Click again to confirm'){if(btn.classList.contains('armed')){fn();return}const o=btn.innerHTML;btn.classList.add('armed');btn.textContent=label;setTimeout(()=>{if(btn.isConnected){btn.classList.remove('armed');btn.innerHTML=o}},3500)}
+const statusTone=s=>({Draft:'',New:'',Open:'bad','In Review':'warn',Reviewed:'info',Approved:'info',Effective:'ok',Superseded:'',Retired:'',Assessed:'warn',Implemented:'info',Verified:'ok',Closed:'ok',Rejected:'bad',Investigating:'warn','Fix In Progress':'info','Ready for Verification':'brand',Pass:'ok',Fail:'bad',Error:'warn',Baseline:'ok',Candidate:'brand',Released:'ok',Critical:'bad',Major:'warn',Minor:'info',High:'bad',Medium:'warn',Low:'ok'}[s]||'');
+const pill=(s,t)=>`<span class="pill ${t??statusTone(s)}">${esc(s)}</span>`;
+const stepper=(flow,cur)=>{const i=flow.indexOf(cur);return `<div class="steps">${flow.map((f,k)=>`<span class="${k<i?'done':k===i?'cur':''}">${k<i?'✓ ':''}${esc(f)}</span>`).join('')}</div>`};
+function blobLink(text,name,type,label,cls='btn'){const u=URL.createObjectURL(new Blob([text],{type}));return `<a class="${cls}" href="${u}" download="${esc(name)}">${label}</a>`}
+
+/* ---------- e-signature (21 CFR Part 11 style) ---------- */
+function esign({record,meanings,title,onSign,requireReason=true}){
+  const u=me();
+  const m=modal(title||'Electronic signature',`
+    <div class="small muted">By signing, you confirm this electronic signature is the legally binding equivalent of your handwritten signature (21 CFR 11.100).</div>
+    <div class="kv"><dt>Record</dt><dd class="mono">${esc(record.id)} · ${esc(record.title||'')}</dd><dt>Signer</dt><dd>${esc(u.name)} (${esc(u.role)})</dd><dt>Record hash</dt><dd class="hashv">${recordHash(record)}</dd></div>
+    <label class="f">Meaning of signature<select class="inp" id="sgM">${meanings.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>
+    <label class="f">Reason / comment ${requireReason?'(required)':''}<input class="inp" id="sgR" placeholder="e.g. Reviewed against SOP-QA-012"></label>
+    <label class="f">Re-enter password / PIN<input class="inp" id="sgP" type="password" autocomplete="off" inputmode="numeric" placeholder="Demo PIN for every user: 1234"></label>
+    <div class="err" id="sgE"></div>`,
+    `<button class="btn" data-x>Cancel</button><button class="btn pri" id="sgGo">✍ Sign</button>`);
+  $('#sgGo',m).onclick=()=>{const pin=$('#sgP',m).value,reason=$('#sgR',m).value.trim(),meaning=$('#sgM',m).value;
+    if(pin!==u.pin){$('#sgE',m).textContent='Signature failed: incorrect PIN. Attempt logged.';audit('E-signature failed',record.id,'Invalid credentials');save();return}
+    if(requireReason&&!reason){$('#sgE',m).textContent='A reason is required.';return}
+    const sig={by:u.id,name:u.name,role:u.role,meaning,reason,at:nowISO(),version:record.version||null,hash:recordHash(record)};
+    sig.sigHash=sha256(JSON.stringify(sig));
+    (record.signatures=record.signatures||[]).push(sig);
+    audit('E-signed ('+meaning+')',record.id,reason);
+    closeModal();onSign&&onSign(sig);save();render()};
+}
+const sigBlock=s=>`<div class="sig"><span class="seal">✒</span><div style="flex:1"><b>${esc(s.name)}</b> · ${esc(s.meaning)} <span class="muted">(${esc(s.role)})</span><div class="small muted">${fmtUTC(s.at)} — ${esc(s.reason||'')}</div><div class="hashv">sig ${short(s.sigHash)} · record ${short(s.hash)}</div></div></div>`;
+
+/* ---------- mini markdown ---------- */
+function md(src){
+  const lines=String(src||'').split('\n');let out='',i=0;const inl=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\b((?:DOC|REQ|TC|TR|CR|BUG|CV)-\d{4})\b/g,'<a href="#" data-goto="$1" class="mono">$1</a>');
+  while(i<lines.length){const l=lines[i];
+    if(/^```/.test(l)){let b=[];i++;while(i<lines.length&&!/^```/.test(lines[i]))b.push(lines[i++]);i++;out+=`<pre class="codebox">${esc(b.join('\n'))}</pre>`;continue}
+    if(/^\|/.test(l)){const rows=[];while(i<lines.length&&/^\|/.test(lines[i]))rows.push(lines[i++]);const cells=r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());const body=rows.filter(r=>!/^\|[\s:|-]+\|$/.test(r));out+='<div style="overflow:auto"><table><thead><tr>'+cells(body[0]).map(c=>`<th>${inl(c)}</th>`).join('')+'</tr></thead><tbody>'+body.slice(1).map(r=>'<tr>'+cells(r).map(c=>`<td>${inl(c)}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>';continue}
+    if(/^#{1,3} /.test(l)){const n=l.match(/^#+/)[0].length;out+=`<h${n}>${inl(l.slice(n+1))}</h${n}>`;i++;continue}
+    if(/^\s*[-*] /.test(l)){out+='<ul>';while(i<lines.length&&/^\s*[-*] /.test(lines[i]))out+=`<li>${inl(lines[i++].replace(/^\s*[-*] /,''))}</li>`;out+='</ul>';continue}
+    if(/^\s*\d+\. /.test(l)){out+='<ol>';while(i<lines.length&&/^\s*\d+\. /.test(lines[i]))out+=`<li>${inl(lines[i++].replace(/^\s*\d+\. /,''))}</li>`;out+='</ol>';continue}
+    if(!l.trim()){i++;continue}
+    let p=[];while(i<lines.length&&lines[i].trim()&&!/^(#|\||```|\s*[-*] |\s*\d+\. )/.test(lines[i]))p.push(lines[i++]);out+=`<p>${inl(p.join(' '))}</p>`}
+  return out}
+
+/* ---------- line diff (LCS) ---------- */
+function diffLines(a,b){a=String(a).split('\n');b=String(b).split('\n');const n=a.length,m=b.length;
+  if(n*m>4e6)return {ops:[...a.map(t=>({t:'del',s:t})),...b.map(t=>({t:'add',s:t}))],add:m,del:n};
+  const dp=Array.from({length:n+1},()=>new Uint32Array(m+1));for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  const ops=[];let i=0,j=0,add=0,del=0;while(i<n&&j<m){if(a[i]===b[j]){ops.push({t:'eq',s:a[i],ai:i+1,bi:j+1});i++;j++}else if(dp[i+1][j]>=dp[i][j+1]){ops.push({t:'del',s:a[i],ai:i+1});i++;del++}else{ops.push({t:'add',s:b[j],bi:j+1});j++;add++}}
+  while(i<n){ops.push({t:'del',s:a[i],ai:i+1});i++;del++}while(j<m){ops.push({t:'add',s:b[j],bi:j+1});j++;add++}return {ops,add,del}}
+function diffHTML(a,b,ctx=3){const {ops,add,del}=diffLines(a,b);const keep=new Array(ops.length).fill(false);ops.forEach((o,k)=>{if(o.t!=='eq')for(let q=Math.max(0,k-ctx);q<=Math.min(ops.length-1,k+ctx);q++)keep[q]=true});
+  let h='',skipped=0;ops.forEach((o,k)=>{if(!keep[k]){skipped++;return}if(skipped){h+=`<div class="gap">··· ${skipped} unchanged line${skipped>1?'s':''}</div>`;skipped=0}h+=`<div class="ln ${o.t}"><span class="n">${o.t==='del'?o.ai:o.bi}</span><span class="c">${esc(o.s)||' '}</span></div>`});
+  if(skipped)h+=`<div class="gap">··· ${skipped} unchanged line${skipped>1?'s':''}</div>`;if(!add&&!del)h='<div class="gap">No differences</div>';return {html:`<div class="diff">${h}</div>`,add,del}}
+
+/* ---------- test automation harness (runs in a Web Worker; falls back to main thread) ---------- */
+function __harness(sutCode,tcs){
+  class AssertionError extends Error{}
+  const fmt=v=>{try{return v===undefined?'undefined':typeof v==='function'?'[function]':JSON.stringify(v)}catch(e){return String(v)}};
+  const out=[];
+  for(const tc of tcs){
+    const t0=performance.now(),cases=[],logs=[];
+    const con={log:(...a)=>logs.push(a.map(x=>typeof x==='object'?fmt(x):String(x)).join(' '))};con.info=con.warn=con.error=con.log;
+    let sut={};
+    try{const exports={};(new Function('exports','console',sutCode))(exports,con);sut=exports}
+    catch(err){out.push({tc:tc.id,status:'Error',ms:0,cases:[{name:'Load system under test',status:'Error',msg:String(err&&err.message||err)}],logs});continue}
+    const reg=[];const test=(name,fn)=>reg.push({name,fn});
+    const expect=a=>{const fail=m=>{throw new AssertionError(m)};
+      const api={
+        toBe:b=>{if(!Object.is(a,b))fail(`expected ${fmt(a)} to be ${fmt(b)}`)},
+        toEqual:b=>{if(fmt(a)!==fmt(b))fail(`expected ${fmt(a)} to equal ${fmt(b)}`)},
+        toBeCloseTo:(b,d=2)=>{if(!(Math.abs(a-b)<Math.pow(10,-d)/2))fail(`expected ${fmt(a)} to be close to ${fmt(b)} (${d} dp)`)},
+        toBeTruthy:()=>{if(!a)fail(`expected ${fmt(a)} to be truthy`)},
+        toBeFalsy:()=>{if(a)fail(`expected ${fmt(a)} to be falsy`)},
+        toBeGreaterThan:b=>{if(!(a>b))fail(`expected ${fmt(a)} > ${fmt(b)}`)},
+        toBeGreaterThanOrEqual:b=>{if(!(a>=b))fail(`expected ${fmt(a)} >= ${fmt(b)}`)},
+        toBeLessThan:b=>{if(!(a<b))fail(`expected ${fmt(a)} < ${fmt(b)}`)},
+        toBeLessThanOrEqual:b=>{if(!(a<=b))fail(`expected ${fmt(a)} <= ${fmt(b)}`)},
+        toContain:b=>{if(!(a!=null&&a.includes&&a.includes(b)))fail(`expected ${fmt(a)} to contain ${fmt(b)}`)},
+        toMatch:re=>{if(!(new RegExp(re)).test(a))fail(`expected ${fmt(a)} to match ${re}`)},
+        toHaveLength:n=>{if(!a||a.length!==n)fail(`expected length ${n}, got ${a&&a.length}`)},
+        toThrow:m=>{let threw=false,msg='';try{a()}catch(e){threw=true;msg=String(e&&e.message||e)}if(!threw)fail('expected function to throw');if(m&&!msg.includes(m))fail(`expected error containing "${m}", got "${msg}"`)}
+      };
+      api.not={};for(const k of Object.keys(api))if(k!=='not')api.not[k]=(...x)=>{let passed=true;try{api[k](...x)}catch(e){passed=false}if(passed)fail(`expected NOT ${k}(${x.map(fmt).join(', ')}) for ${fmt(a)}`)};
+      return api};
+    try{(new Function('sut','test','expect','console',tc.script))(sut,test,expect,con)}
+    catch(err){out.push({tc:tc.id,status:'Error',ms:+(performance.now()-t0).toFixed(1),cases:[{name:'Script error',status:'Error',msg:String(err&&err.message||err)}],logs});continue}
+    if(!reg.length){out.push({tc:tc.id,status:'Error',ms:0,cases:[{name:'No test() blocks defined',status:'Error',msg:'Script registered no tests'}],logs});continue}
+    for(const c of reg){const c0=performance.now();try{c.fn();cases.push({name:c.name,status:'Pass',ms:+(performance.now()-c0).toFixed(2)})}
+      catch(e){cases.push({name:c.name,status:e instanceof AssertionError?'Fail':'Error',msg:String(e&&e.message||e),ms:+(performance.now()-c0).toFixed(2)})}}
+    const st=cases.some(c=>c.status==='Error')?'Error':cases.some(c=>c.status==='Fail')?'Fail':'Pass';
+    out.push({tc:tc.id,status:st,ms:+(performance.now()-t0).toFixed(1),cases,logs});
+  }
+  return out;
+}
+function runSuite(sutCode,tcs,timeoutMs=8000){
+  const payload={sut:sutCode,tests:tcs.map(t=>({id:t.id,script:t.script||''}))};
+  return new Promise(resolve=>{
+    let w,done=false;const fallback=why=>{if(done)return;done=true;try{w&&w.terminate()}catch(e){}resolve({results:__harness(payload.sut,payload.tests),engine:'main thread'+(why?' ('+why+')':'')})};
+    try{const src=`${__harness.toString()};onmessage=e=>postMessage(__harness(e.data.sut,e.data.tests));`;
+      w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+      const timer=setTimeout(()=>{if(done)return;done=true;w.terminate();resolve({results:payload.tests.map(t=>({tc:t.id,status:'Error',ms:timeoutMs,cases:[{name:'Timeout',status:'Error',msg:`Execution exceeded ${timeoutMs/1000}s — possible infinite loop`}],logs:[]})),engine:'web worker (sandboxed)'})},timeoutMs);
+      w.onmessage=e=>{if(done)return;done=true;clearTimeout(timer);w.terminate();resolve({results:e.data,engine:'web worker (sandboxed)'})};
+      w.onerror=e=>{clearTimeout(timer);e.preventDefault&&e.preventDefault();fallback('worker unavailable')};
+      w.postMessage(payload);
+    }catch(e){fallback('worker unavailable')}
+  });
+}
+
+/* ---------- code migration rule packs ---------- */
+const RULE_PACKS={
+  'es5-es2015':{name:'JavaScript ES5 → ES2015+',lang:'javascript',rules:[
+    {find:'\\bvar\\s+',replace:'let ',flags:'g',desc:'var → let (block scoping)'},
+    {find:'([^=!<>])==(?!=)',replace:'$1===',flags:'g',desc:'Loose equality == → strict ==='},
+    {find:'!=(?!=)',replace:'!==',flags:'g',desc:'Loose inequality != → strict !=='},
+    {find:'\\.indexOf\\(([^()]+)\\)\\s*!==?\\s*-1',replace:'.includes($1)',flags:'g',desc:'indexOf(x) !== -1 → includes(x)'},
+    {find:'\\.indexOf\\(([^()]+)\\)\\s*>=\\s*0',replace:'.includes($1)',flags:'g',desc:'indexOf(x) >= 0 → includes(x)'},
+    {find:'function\\s*\\(([^)]*)\\)\\s*\\{\\s*return\\s+([^;{}]+);\\s*\\}',replace:'($1) => $2',flags:'g',desc:'Single-return function → arrow function'}
+  ]},
+  'py2-py3':{name:'Python 2.7 → Python 3.11',lang:'python',rules:[
+    {find:'^(\\s*)print\\s+(?!\\()(.+)$',replace:'$1print($2)',flags:'gm',desc:'print statement → print() function'},
+    {find:'\\bxrange\\(',replace:'range(',flags:'g',desc:'xrange() → range()'},
+    {find:'\\.iteritems\\(\\)',replace:'.items()',flags:'g',desc:'dict.iteritems() → items()'},
+    {find:'\\.itervalues\\(\\)',replace:'.values()',flags:'g',desc:'dict.itervalues() → values()'},
+    {find:'\\.has_key\\(([^()]+)\\)',replace:' __HASKEY__($1)',flags:'g',desc:'dict.has_key(k) → k in dict (marker)'},
+    {find:'(\\w+) __HASKEY__\\(([^()]+)\\)',replace:'$2 in $1',flags:'g',desc:'(resolve has_key marker)'},
+    {find:'\\braw_input\\(',replace:'input(',flags:'g',desc:'raw_input() → input()'},
+    {find:'except\\s+([\\w.]+)\\s*,\\s*(\\w+)\\s*:',replace:'except $1 as $2:',flags:'g',desc:'except X, e → except X as e'},
+    {find:'\\bunicode\\(',replace:'str(',flags:'g',desc:'unicode() → str()'},
+    {find:'<>',replace:'!=',flags:'g',desc:'<> operator → !='},
+    {find:'^(\\s*)import\\s+ConfigParser\\b',replace:'$1import configparser',flags:'gm',desc:'ConfigParser → configparser'}
+  ]},
+  'oracle-pg':{name:'Oracle 12c SQL → PostgreSQL 15',lang:'sql',rules:[
+    {find:'\\bVARCHAR2\\b',replace:'VARCHAR',flags:'gi',desc:'VARCHAR2 → VARCHAR'},
+    {find:'\\bNUMBER\\(',replace:'NUMERIC(',flags:'gi',desc:'NUMBER(p,s) → NUMERIC(p,s)'},
+    {find:'\\bNUMBER\\b',replace:'NUMERIC',flags:'gi',desc:'NUMBER → NUMERIC'},
+    {find:'\\bCLOB\\b',replace:'TEXT',flags:'gi',desc:'CLOB → TEXT'},
+    {find:'\\bNVL\\(',replace:'COALESCE(',flags:'gi',desc:'NVL() → COALESCE()'},
+    {find:'\\bSYSDATE\\b',replace:'CURRENT_TIMESTAMP',flags:'gi',desc:'SYSDATE → CURRENT_TIMESTAMP'},
+    {find:'\\s+FROM\\s+DUAL\\b',replace:'',flags:'gi',desc:'Remove FROM DUAL'},
+    {find:'\\bDATE\\s+DEFAULT\\s+CURRENT_TIMESTAMP',replace:'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',flags:'gi',desc:'DATE w/ time → TIMESTAMP'},
+    {find:'(\\w+)\\.NEXTVAL',replace:"nextval('$1')",flags:'gi',desc:'seq.NEXTVAL → nextval(\'seq\')'},
+    {find:'\\bTO_CHAR\\(([^,()]+),\\s*\'YYYY-MM-DD\'\\)',replace:"TO_CHAR($1, 'YYYY-MM-DD')",flags:'gi',desc:'TO_CHAR date format (compatible)'}
+  ]},
+  'custom':{name:'Custom rules',lang:'text',rules:[]}
+};
+function applyRules(code,rules){let out=String(code||'');const counts=[];const errors=[];
+  rules.forEach((r,i)=>{if(r.off){counts.push(0);return}try{const re=new RegExp(r.find,r.flags||'g');const m=out.match(new RegExp(r.find,(r.flags||'g').includes('g')?r.flags||'g':(r.flags||'')+'g'));counts.push(m?m.length:0);out=out.replace(re,r.replace)}catch(e){counts.push(0);errors.push(`Rule ${i+1}: ${e.message}`)}});
+  return {out,counts,errors}}
+
+/* ---------- demo data: fictional "Northwind Biologics" ---------- */
+const SUT_V42=String.raw`// LabTrack LIMS — core calculation module v4.2
+// GAMP 5 Category 5 (custom code). Validated baseline.
+'use strict';
+
+var DOSE_MAX_MG = 1000;
+
+exports.calcDose = function (weightKg, mgPerKg) {
+  if (typeof weightKg != 'number' || weightKg <= 0) throw new Error('Invalid weight');
+  if (typeof mgPerKg != 'number' || mgPerKg <= 0) throw new Error('Invalid dose rate');
+  var dose = Math.round(weightKg * mgPerKg * 10) / 10;
+  if (dose > DOSE_MAX_MG) throw new Error('Dose exceeds maximum');
+  return dose;
+};
+
+exports.withinSpec = function (value, low, high) {
+  return value >= low && value <= high;
+};
+
+exports.tempExcursion = function (readings, min, max, allowedMinutes) {
+  // readings: [{ t: minute, c: celsius }] sampled once per minute
+  var out = 0;
+  for (var i = 0; i < readings.length; i++) {
+    if (readings[i].c < min || readings[i].c > max) out++;
+  }
+  return { minutesOut: out, excursion: out > allowedMinutes };
+};
+
+exports.batchId = function (site, year, seq) {
+  var s = String(seq);
+  while (s.length < 5) s = '0' + s;
+  return site.toUpperCase() + '-' + year + '-' + s;
+};
+
+exports.isValidBatchId = function (id) {
+  return /^[A-Z]{3}-\d{4}-\d{5}$/.test(id);
+};
+
+exports.hasRole = function (user, role) {
+  return user.roles.indexOf(role) != -1;
+};
+
+exports.canApprove = function (record, user) {
+  // segregation of duties: an author can never approve their own record
+  if (record.author == user.id) return false;
+  return exports.hasRole(user, 'QA');
+};
+`;
+const SUT_V50=applyRules(SUT_V42,RULE_PACKS['es5-es2015'].rules).out
+  .replace('// LabTrack LIMS — core calculation module v4.2\n// GAMP 5 Category 5 (custom code). Validated baseline.','// LabTrack LIMS — core calculation module v5.0-rc1\n// GAMP 5 Category 5 (custom code). Migrated to ES2015+ under CR-0001.')
+  .replace('let DOSE_MAX_MG','const DOSE_MAX_MG')
+  .replace("let s = String(seq);\n  while (s.length < 5) s = '0' + s;\n  return","const s = String(seq).padStart(5, '0');\n  return")
+  .replace("let out = 0;\n  for (let i = 0; i < readings.length; i++) {\n    if (readings[i].c < min || readings[i].c > max) out++;\n  }\n  return { minutesOut: out, excursion: out > allowedMinutes };",
+           "const out = readings.filter(r => r.c < min || r.c > max).length;\n  return { minutesOut: out, excursion: out >= allowedMinutes };");
+
+const PY_SRC=String.raw`# Instrument data parser — HPLC export (Python 2.7)
+import ConfigParser
+import csv
+
+def load_peaks(path, min_area):
+    peaks = {}
+    f = open(path)
+    try:
+        for row in csv.DictReader(f):
+            if float(row['area']) <> 0 and float(row['area']) >= min_area:
+                peaks[row['peak_id']] = unicode(row['name'])
+    except ValueError, e:
+        print "Parse error:", e
+    finally:
+        f.close()
+    for k, v in peaks.iteritems():
+        print k, v
+    if peaks.has_key('SST'):
+        print "System suitability peak present"
+    for i in xrange(3):
+        print "replicate", i
+    return peaks
+`;
+const SQL_SRC=String.raw`-- Stability study results schema (Oracle 12c)
+CREATE TABLE stab_result (
+  result_id    NUMBER(12) PRIMARY KEY,
+  study_code   VARCHAR2(20) NOT NULL,
+  timepoint_m  NUMBER(3),
+  assay_pct    NUMBER(6,2),
+  analyst      VARCHAR2(60),
+  comments     CLOB,
+  entered_at   DATE DEFAULT SYSDATE
+);
+
+INSERT INTO stab_result (result_id, study_code, timepoint_m, assay_pct, analyst)
+VALUES (stab_seq.NEXTVAL, 'NWB-101-STB', 6, 99.2, 'p.shah');
+
+SELECT study_code, NVL(assay_pct, 0) AS assay, TO_CHAR(entered_at, 'YYYY-MM-DD') AS d
+  FROM stab_result
+ WHERE entered_at > SYSDATE - 30;
+
+SELECT SYSDATE FROM DUAL;
+`;
+
+const TC_SCRIPTS={
+'TC-0001':String.raw`test('70 kg at 5 mg/kg = 350 mg', () => {
+  expect(sut.calcDose(70, 5)).toBe(350);
+});
+test('Rounds to 0.1 mg', () => {
+  expect(sut.calcDose(63.37, 2.5)).toBe(158.4);
+  expect(sut.calcDose(12.25, 0.5)).toBeCloseTo(6.1, 1);
+});
+test('Pediatric low weight', () => {
+  expect(sut.calcDose(3.2, 1.25)).toBe(4);
+});`,
+'TC-0002':String.raw`test('Rejects zero / negative weight', () => {
+  expect(() => sut.calcDose(0, 5)).toThrow('Invalid weight');
+  expect(() => sut.calcDose(-4, 5)).toThrow('Invalid weight');
+});
+test('Rejects non-numeric input', () => {
+  expect(() => sut.calcDose('70', 5)).toThrow('Invalid weight');
+  expect(() => sut.calcDose(70, null)).toThrow('Invalid dose rate');
+});
+test('Enforces 1000 mg ceiling', () => {
+  expect(sut.calcDose(100, 10)).toBe(1000);
+  expect(() => sut.calcDose(100, 10.01)).toThrow('maximum');
+});`,
+'TC-0003':String.raw`test('Inclusive lower and upper limits', () => {
+  expect(sut.withinSpec(95.0, 95.0, 105.0)).toBe(true);
+  expect(sut.withinSpec(105.0, 95.0, 105.0)).toBe(true);
+});
+test('Out of specification', () => {
+  expect(sut.withinSpec(94.99, 95, 105)).toBe(false);
+  expect(sut.withinSpec(105.01, 95, 105)).toBe(false);
+});`,
+'TC-0004':String.raw`const series = (n, fn) => Array.from({ length: n }, (_, i) => ({ t: i, c: fn(i) }));
+test('No excursion when all readings in range', () => {
+  expect(sut.tempExcursion(series(60, () => 5), 2, 8, 30).excursion).toBe(false);
+});
+test('Exactly the allowed duration is NOT an excursion', () => {
+  const res = sut.tempExcursion(series(60, i => (i < 30 ? 9.5 : 5)), 2, 8, 30);
+  expect(res.minutesOut).toBe(30);
+  expect(res.excursion).toBe(false);
+});
+test('One minute over the allowed duration IS an excursion', () => {
+  expect(sut.tempExcursion(series(60, i => (i < 31 ? 1.2 : 5)), 2, 8, 30).excursion).toBe(true);
+});`,
+'TC-0005':String.raw`test('Generates zero-padded batch IDs', () => {
+  expect(sut.batchId('bos', 2026, 42)).toBe('BOS-2026-00042');
+});
+test('Validates batch ID format', () => {
+  expect(sut.isValidBatchId('BOS-2026-00042')).toBeTruthy();
+  expect(sut.isValidBatchId('bos-2026-42')).toBeFalsy();
+});`,
+'TC-0006':String.raw`const qa = { id: 'mlee', roles: ['QA'] };
+const dev = { id: 'arivera', roles: ['Author'] };
+test('Author cannot approve own record', () => {
+  expect(sut.canApprove({ author: 'mlee' }, qa)).toBe(false);
+});
+test('QA can approve another author\'s record', () => {
+  expect(sut.canApprove({ author: 'arivera' }, qa)).toBe(true);
+});
+test('Non-QA user cannot approve', () => {
+  expect(sut.canApprove({ author: 'mlee' }, dev)).toBe(false);
+});`
+};
+
+const TEMPLATES={
+SOP:`# {title}\n\n## 1. Purpose\nDescribe why this procedure exists.\n\n## 2. Scope\nSystems, sites and personnel in scope.\n\n## 3. Responsibilities\n| Role | Responsibility |\n|---|---|\n| System Owner | |\n| QA | |\n\n## 4. Procedure\n1. Step one\n2. Step two\n\n## 5. Records\nRecords generated and retention period.\n\n## 6. References\n- 21 CFR Part 11\n- EU GMP Annex 11\n- GAMP 5 (2nd ed.)\n\n## 7. Revision History\n| Version | Change |\n|---|---|\n| 1.0 | Initial issue |`,
+VP:`# {title}\n\n## 1. Introduction\nSystem description and GAMP 5 category.\n\n## 2. Validation Strategy\nRisk-based approach per ICH Q9 / GAMP 5. Critical thinking applied (CSA).\n\n## 3. Deliverables\n| Deliverable | Responsible | Approver |\n|---|---|---|\n| URS | System Owner | QA |\n| Risk Assessment | Validation | QA |\n| IQ/OQ/PQ | Validation | QA |\n| Traceability Matrix | Validation | QA |\n| Validation Summary Report | Validation | QA |\n\n## 4. Acceptance Criteria\nAll high-risk requirements tested with documented evidence; no open Critical/Major deviations.\n\n## 5. Deviation Handling\nDeviations raised as defects with root cause and CAPA.`,
+URS:`# {title}\n\n## 1. Purpose\n\n## 2. Requirements\n| ID | Requirement | GxP Impact |\n|---|---|---|\n| REQ-xxxx | | High |\n\n## 3. Regulatory Requirements\n- Audit trail (21 CFR 11.10(e))\n- Electronic signatures (21 CFR 11.50 / 11.70)`,
+FS:`# {title}\n\n## 1. Overview\n\n## 2. Functional Description\n\n## 3. Interfaces\n\n## 4. Data & Security\n\n## 5. Traceability to URS`,
+RA:`# {title}\n\n## 1. Method\nFMEA — Severity × Probability × Detectability (1–3 each). RPN ≥ 12 = High.\n\n## 2. Risk Register\n| Function | Failure mode | S | P | D | RPN | Mitigation |\n|---|---|---|---|---|---|---|\n| | | | | | | |\n\n## 3. Conclusion`,
+IQ:`# {title}\n\n## 1. Objective\nVerify the system is installed per approved specifications.\n\n## 2. Checks\n| # | Check | Expected | Actual | Pass/Fail |\n|---|---|---|---|---|\n| 1 | Server OS version | | | |\n| 2 | Application version | | | |\n| 3 | Configuration baseline | | | |`,
+OQ:`# {title}\n\n## 1. Objective\nVerify the system operates as specified across its operating range.\n\n## 2. Test Cases\nReference automated test cases (TC-xxxx) with execution evidence in Test Runs (TR-xxxx).\n\n## 3. Acceptance Criteria\nAll test cases pass; deviations documented.`,
+PQ:`# {title}\n\n## 1. Objective\nVerify the system performs consistently in the production environment with real users.\n\n## 2. Scenarios\n\n## 3. Acceptance Criteria`,
+Policy:`# {title}\n\n## Policy Statement\n\n## Principles\n- Attributable\n- Legible\n- Contemporaneous\n- Original\n- Accurate\n- Complete, Consistent, Enduring, Available\n\n## Responsibilities`,
+TSR:`# {title}\n\n## Summary\n\n## Results\n\n## Deviations\n\n## Conclusion`,
+VSR:`# {title}\n\n## 1. Summary\n\n## 2. Deliverables Status\n\n## 3. Deviations & CAPA\n\n## 4. Release Statement\nThe system is fit for intended use.`,
+RTM:`# {title}\n\n(Generated from the live traceability matrix.)`,
+CCR:`# {title}\n\n(Generated from the change control record.)`
+};
+const DOC_TYPES={SOP:'Standard Operating Procedure',Policy:'Policy',VP:'Validation Plan',URS:'User Requirements Spec',FS:'Functional Spec',RA:'Risk Assessment',IQ:'IQ Protocol',OQ:'OQ Protocol',PQ:'PQ Protocol',TSR:'Test Summary Report',RTM:'Traceability Matrix',VSR:'Validation Summary Report',CCR:'Change Control Record'};
+
+function seed(){
+  const t=d=>new Date(Date.now()+d*DAY).toISOString();
+  S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:'u1',theme:'auto',
+    users:[{id:'u1',name:'Alex Rivera',role:'Developer',roles:['Author'],pin:'1234'},{id:'u2',name:'Priya Shah',role:'QA Tester',roles:['Tester'],pin:'1234'},{id:'u3',name:'Morgan Lee',role:'QA Approver',roles:['QA'],pin:'1234'},{id:'u4',name:'Sam Okafor',role:'System Owner',roles:['Owner'],pin:'1234'}],
+    system:{name:'LabTrack LIMS',org:'Northwind Biologics',gamp:'Category 5 — custom code',site:'Boston (BOS)'},
+    docs:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};
+  const ev=[];const at=(d,fn)=>ev.push({d,fn});
+  const sig=(rec,uid,meaning,reason,d)=>{const u=S.users.find(x=>x.id===uid);const s={by:uid,name:u.name,role:u.role,meaning,reason,at:t(d),version:rec.version||null,hash:recordHash(rec)};s.sigHash=sha256(JSON.stringify(s));(rec.signatures=rec.signatures||[]).push(s)};
+
+  // code baselines
+  const cv1={id:nextId('CV'),label:'v4.2',title:'LabTrack core module v4.2',lang:'javascript',status:'Baseline',code:SUT_V42,created:t(-210),by:'u1'};cv1.hash=sha256(cv1.code);
+  S.code.push(cv1);at(-210,()=>audit('Code baseline registered',cv1.id,'v4.2 sha256 '+short(cv1.hash),'u1'));
+
+  // requirements
+  const R=[['Calculate dose from patient weight and mg/kg rate, rounded to 0.1 mg','Calculations','High',[3,2,2]],
+    ['Reject invalid (non-numeric, zero or negative) dose inputs','Calculations','High',[3,2,2]],
+    ['Prevent any calculated dose above the 1000 mg ceiling','Calculations','High',[3,1,2]],
+    ['Evaluate results against specification limits inclusively','Results','High',[3,2,1]],
+    ['Flag a cold-chain excursion only when out-of-range time exceeds the allowed duration','Cold chain','High',[3,2,3]],
+    ['Generate and validate batch IDs in format SSS-YYYY-NNNNN','Batch records','Medium',[2,1,1]],
+    ['Prevent an author from approving their own record (segregation of duties)','Part 11','High',[3,2,2]],
+    ['Restrict approvals to users holding the QA role','Part 11','High',[3,1,2]],
+    ['Secure, computer-generated, time-stamped audit trail of all GxP actions','Part 11','High',[3,1,2]],
+    ['Electronic signatures display signer name, date/time and meaning','Part 11','Medium',[2,1,2]],
+    ['Export any GxP record in a human-readable format for inspection','Data integrity','Low',[1,1,1]]];
+  R.forEach(([text,cat,gxp,[s,p,d]])=>S.reqs.push({id:nextId('REQ'),text,category:cat,gxp,risk:{s,p,d},source:'DOC-0003',created:t(-200)}));
+
+  // tests
+  const T=[['Dose calculation accuracy','OQ',['REQ-0001']],['Dose input validation & ceiling','OQ',['REQ-0002','REQ-0003']],['Specification limit evaluation','OQ',['REQ-0004']],['Temperature excursion boundary','OQ',['REQ-0005']],['Batch ID generation & validation','OQ',['REQ-0006']],['Approval segregation of duties','OQ',['REQ-0007','REQ-0008']]];
+  T.forEach(([title,type,reqs])=>{const id=nextId('TC');S.tests.push({id,title,type,reqs,mode:'auto',script:TC_SCRIPTS[id],steps:[],status:'Approved',version:'1.0',author:'u2',created:t(-150)})});
+  S.tests.push({id:nextId('TC'),title:'Audit trail review & integrity',type:'PQ',reqs:['REQ-0009'],mode:'manual',script:'',status:'Approved',version:'1.0',author:'u2',created:t(-140),steps:[
+    {action:'Log in as Author and create a new document',expected:'Audit entry records user, UTC timestamp and action'},
+    {action:'Edit the document and save',expected:'Audit entry shows modification; previous entries unchanged'},
+    {action:'Open Audit Trail and run "Verify chain"',expected:'Chain verifies intact; every entry hash-linked to previous'}]});
+  S.tests.push({id:nextId('TC'),title:'E-signature manifestation',type:'PQ',reqs:['REQ-0010'],mode:'manual',script:'',status:'Approved',version:'1.0',author:'u2',created:t(-140),steps:[
+    {action:'Sign a document with meaning "Approved" and reason',expected:'Signature shows printed name, UTC date/time and meaning'},
+    {action:'Attempt a signature with an incorrect PIN',expected:'Signature rejected; failed attempt written to audit trail'}]});
+  S.tests.push({id:nextId('TC'),title:'Installation qualification — app server',type:'IQ',reqs:[],mode:'manual',script:'',status:'Draft',version:'0.1',author:'u2',created:t(-6),steps:[
+    {action:'Record OS version on LIMS app server',expected:'Windows Server 2022 Datacenter 21H2'},{action:'Record application build',expected:'LabTrack 5.0.0-rc1'}]});
+
+  // documents
+  const D=[['SOP','Computerized System Validation (SOP-QA-012)','3.0','Effective','u4',-400,20,`# Computerized System Validation\n\n## 1. Purpose\nDefines the risk-based lifecycle for validating GxP computerized systems at Northwind Biologics, aligned to GAMP 5 (2nd ed.) and FDA Computer Software Assurance (CSA).\n\n## 2. Scope\nAll systems that create, modify, maintain, archive, retrieve or transmit GxP records.\n\n## 3. Lifecycle\n1. Plan — Validation Plan (VP) approved by QA\n2. Specify — URS / FS with GxP impact and risk\n3. Verify — IQ / OQ / PQ executed with objective evidence\n4. Report — Traceability Matrix and Validation Summary Report\n5. Operate — change control, periodic review, incident/CAPA\n\n## 4. Risk Classification\n| RPN (S×P×D) | Class | Testing rigour |\n|---|---|---|\n| ≥ 12 | High | Scripted testing, independent review |\n| 6–11 | Medium | Scripted or unscripted with evidence |\n| ≤ 5 | Low | Unscripted / vendor evidence |\n\n## 5. References\n- 21 CFR Part 11\n- EU GMP Annex 11\n- SOP-QA-007 Change Control`],
+    ['SOP','Change Control (SOP-QA-007)','4.0','Effective','u4',-760,-12,`# Change Control\n\n## 1. Purpose\nEnsure changes to validated systems — code migrations, patches, configuration and infrastructure — are assessed, approved, tested and documented before release.\n\n## 2. Procedure\n1. Raise change request (CR) with description and justification\n2. Impact & risk assessment: data integrity, validated state, Part 11 controls, SOPs, training\n3. QA approval (e-signature) before implementation\n4. Implement per migration plan with backup and rollback\n5. Execute regression tests; raise defects for failures\n6. Verify and close with QA e-signature; promote new baseline\n\n## 3. Emergency Changes\nRetrospective approval within 5 business days.`],
+    ['URS','LabTrack LIMS User Requirements Specification','2.1','Effective','u4',-200,530,null],
+    ['RA','LabTrack LIMS v5.0 Risk Assessment (FMEA)','1.0','Approved','u1',-30,null,null],
+    ['VP','LabTrack LIMS v5.0 Validation Plan','0.3','In Review','u1',-9,null,`# LabTrack LIMS v5.0 Validation Plan\n\n## 1. Introduction\nLabTrack LIMS core module is migrated from ES5 to ES2015+ (CR-0001). GAMP 5 Category 5.\n\n## 2. Strategy\nRegression of all automated OQ test cases against v5.0-rc1; manual PQ for audit trail and e-signature.\n\n## 3. Deliverables\n| Deliverable | Status |\n|---|---|\n| Risk Assessment | Approved |\n| OQ (automated) | In execution |\n| PQ (manual) | Pending |\n| Validation Summary Report | Not started |\n\n## 4. Acceptance Criteria\nAll High-GxP requirements traced to passing tests. No open Critical/Major defects.`],
+    ['OQ','LabTrack LIMS v5.0 OQ Protocol','0.1','Draft','u2',-5,null,null],
+    ['Policy','Data Integrity & ALCOA+ Policy (POL-QA-001)','2.0','Effective','u3',-320,410,null]];
+  D.forEach(([type,title,version,status,owner,dc,rev,content])=>{const id=nextId('DOC');
+    let c=content||TEMPLATES[type].replace('{title}',title.replace(/ \(.*\)$/,''));
+    if(type==='URS')c=`# ${title}\n\n## 1. Purpose\nUser requirements for LabTrack LIMS core calculations and Part 11 controls.\n\n## 2. Requirements\n| ID | Requirement | Category | GxP Impact |\n|---|---|---|---|\n`+S.reqs.map(r=>`| ${r.id} | ${r.text} | ${r.category} | ${r.gxp} |`).join('\n');
+    if(type==='RA')c=`# ${title}\n\n## Method\nFMEA — Severity × Probability × Detectability (1–3). RPN ≥ 12 = High.\n\n## Risk Register\n| Req | S | P | D | RPN |\n|---|---|---|---|---|\n`+S.reqs.map(r=>`| ${r.id} | ${r.risk.s} | ${r.risk.p} | ${r.risk.d} | ${r.risk.s*r.risk.p*r.risk.d} |`).join('\n');
+    const doc={id,type,title,version,status,owner,content:c,created:t(dc),updated:t(dc+3),effective:status==='Effective'?t(dc+6):null,reviewDue:rev!=null?t(rev):null,history:[],signatures:[]};
+    doc.history.push({at:t(dc),by:owner,text:'Created v'+version.split('.')[0]+'.0 draft'});
+    S.docs.push(doc);
+    at(dc,()=>audit('Document created',id,title,owner));
+    if(status!=='Draft'){at(dc+2,()=>{audit('Submitted for review',id,'v'+version,owner)});doc.history.push({at:t(dc+2),by:owner,text:'Submitted for review'})}
+    if(['Approved','Effective'].includes(status)){const rv=owner==='u2'?'u1':'u2';at(dc+4,()=>{sig(doc,rv,'Reviewed','Content verified against template',dc+4);audit('E-signed (Reviewed)',id,'',rv)});at(dc+5,()=>{sig(doc,'u3','Approved','Approved for use',dc+5);audit('E-signed (Approved)',id,'','u3')});doc.history.push({at:t(dc+5),by:'u3',text:'Approved'})}
+    if(status==='Effective'){at(dc+6,()=>audit('Made effective',id,'v'+version,'u3'));doc.history.push({at:t(dc+6),by:'u3',text:'Effective v'+version})}
+  });
+
+  // changes
+  const cr1={id:nextId('CR'),title:'LabTrack core v4.2 → v5.0: ES5 → ES2015+ code migration',type:'Code Migration',lang:'javascript',status:'Implemented',requester:'u1',owner:'u1',created:t(-28),
+    description:'Modernize the LIMS core calculation module to ES2015+ (strict equality, block scoping, arrow functions) to align with the v5.0 platform and remove tech-debt flagged in the last periodic review.',
+    justification:'Vendor runtime upgrade drops legacy ES5 transpilation; required for v5.0 release.',
+    risk:'High',gamp:'5',fromCV:'CV-0001',toLabel:'v5.0-rc1',pack:'es5-es2015',rules:clone(RULE_PACKS['es5-es2015'].rules),sourceCode:SUT_V42,targetCode:SUT_V50,
+    impact:{di:true,validated:true,p11:false,sop:false,training:true,data:false},
+    impactNotes:'Calculation logic affects dose and cold-chain disposition decisions — full OQ regression required.',
+    plan:[{step:'Back up production database and code baseline CV-0001',done:true},{step:'Apply ES5 → ES2015+ rule pack in migration workbench',done:true},{step:'Peer code review of transformed module',done:true},{step:'Run full OQ regression suite against candidate',done:true},{step:'Deploy to validation environment',done:false},{step:'Rollback plan: restore CV-0001 and redeploy (≤ 30 min)',done:false}],
+    tests:['TC-0001','TC-0002','TC-0003','TC-0004','TC-0005','TC-0006'],history:[],signatures:[]};
+  S.changes.push(cr1);
+  at(-28,()=>audit('Change request raised',cr1.id,cr1.title,'u1'));
+  at(-26,()=>{sig(cr1,'u4','Assessed','Impact & risk assessment complete',-26);audit('E-signed (Assessed)',cr1.id,'','u4')});
+  at(-24,()=>{sig(cr1,'u3','Approved','Approved for implementation',-24);audit('E-signed (Approved)',cr1.id,'','u3')});
+  at(-3,()=>audit('Migration rules applied',cr1.id,'Rule pack es5-es2015 → v5.0-rc1','u1'));
+  at(-2,()=>audit('Status → Implemented',cr1.id,'','u1'));
+  cr1.history.push({at:t(-28),by:'u1',text:'Raised'},{at:t(-26),by:'u4',text:'Assessed'},{at:t(-24),by:'u3',text:'Approved'},{at:t(-2),by:'u1',text:'Implemented'});
+
+  const cr2={id:nextId('CR'),title:'Stability results schema: Oracle 12c → PostgreSQL 15',type:'Database Migration',lang:'sql',status:'Assessed',requester:'u4',owner:'u1',created:t(-12),
+    description:'Migrate the stability study results schema and reporting queries off Oracle 12c (end of extended support).',justification:'Oracle 12c extended support ended; licence cost reduction.',
+    risk:'High',gamp:'4',fromCV:null,toLabel:'pg15',pack:'oracle-pg',rules:clone(RULE_PACKS['oracle-pg'].rules),sourceCode:SQL_SRC,targetCode:'',
+    impact:{di:true,validated:true,p11:true,sop:true,training:false,data:true},impactNotes:'Data migration requires record-count and checksum reconciliation (ALCOA+ complete & accurate).',
+    plan:[{step:'Export Oracle schema and data with checksums',done:false},{step:'Convert DDL/DML with Oracle → PostgreSQL rule pack',done:false},{step:'Reconcile row counts and column checksums',done:false},{step:'Execute data migration verification protocol',done:false}],tests:[],history:[{at:t(-12),by:'u4',text:'Raised'},{at:t(-10),by:'u4',text:'Assessed'}],signatures:[]};
+  S.changes.push(cr2);at(-12,()=>audit('Change request raised',cr2.id,cr2.title,'u4'));at(-10,()=>{sig(cr2,'u4','Assessed','Data integrity impact identified',-10);audit('E-signed (Assessed)',cr2.id,'','u4')});
+
+  const cr3={id:nextId('CR'),title:'HPLC instrument data parser: Python 2.7 → 3.11',type:'Code Migration',lang:'python',status:'Draft',requester:'u1',owner:'u1',created:t(-4),
+    description:'Port the chromatography export parser to Python 3.11; Python 2.7 is unsupported and flagged by IT security.',justification:'Security vulnerability remediation.',
+    risk:'Medium',gamp:'5',fromCV:null,toLabel:'parser-3.0',pack:'py2-py3',rules:clone(RULE_PACKS['py2-py3'].rules),sourceCode:PY_SRC,targetCode:'',
+    impact:{di:true,validated:true,p11:false,sop:false,training:false,data:false},impactNotes:'',plan:[{step:'Apply Python 2 → 3 rule pack',done:false},{step:'Manual review of str/bytes handling',done:false},{step:'Parallel run against 20 historical exports',done:false}],tests:[],history:[{at:t(-4),by:'u1',text:'Raised'}],signatures:[]};
+  S.changes.push(cr3);at(-4,()=>audit('Change request raised',cr3.id,cr3.title,'u1'));
+
+  const cr4={id:nextId('CR'),title:'LIMS app server OS: Windows Server 2016 → 2022',type:'Infrastructure',lang:'text',status:'Closed',requester:'u4',owner:'u4',created:t(-95),
+    description:'In-place OS upgrade of the LIMS application server.',justification:'OS end of mainstream support.',risk:'Medium',gamp:'1',fromCV:null,toLabel:'',pack:'custom',rules:[],sourceCode:'',targetCode:'',
+    impact:{di:false,validated:true,p11:false,sop:false,training:false,data:false},impactNotes:'Infrastructure qualification (IQ) only.',
+    plan:[{step:'Snapshot VM',done:true},{step:'Upgrade OS',done:true},{step:'Execute IQ checklist',done:true}],tests:[],history:[{at:t(-95),by:'u4',text:'Raised'},{at:t(-70),by:'u3',text:'Closed'}],signatures:[]};
+  S.changes.push(cr4);at(-95,()=>audit('Change request raised',cr4.id,cr4.title,'u4'));at(-92,()=>{sig(cr4,'u3','Approved','Low data risk',-92);audit('E-signed (Approved)',cr4.id,'','u3')});at(-70,()=>{sig(cr4,'u3','Closed','IQ executed, no deviations',-70);audit('E-signed (Closed)',cr4.id,'','u3')});
+
+  // runs (executed for real with the harness)
+  const autoTests=S.tests.filter(x=>x.mode==='auto');
+  const mkRun=(d,by,target,code,label,cr)=>{const res=__harness(code,autoTests.map(x=>({id:x.id,script:x.script})));const r={id:nextId('TR'),at:t(d),by,target,codeLabel:label,codeHash:sha256(code),cr:cr||null,engine:'web worker (sandboxed)',results:res.map(x=>Object.assign(x,{testVersion:'1.0'})),signatures:[]};r.hash=sha256(JSON.stringify(r.results));S.runs.push(r);return r};
+  const r1=mkRun(-20,'u2','CV-0001',SUT_V42,'v4.2 baseline',null);
+  at(-20,()=>audit('Test run executed',r1.id,'6/6 passed on v4.2','u2'));at(-19,()=>{sig(r1,'u3','Reviewed','Evidence reviewed',-19);audit('E-signed (Reviewed)',r1.id,'','u3')});
+  const r2=mkRun(-1,'u2','CR-0001',SUT_V50,'v5.0-rc1 (CR-0001)','CR-0001');
+  const p2=r2.results.filter(x=>x.status==='Pass').length;
+  at(-1,()=>audit('Test run executed',r2.id,`${p2}/${r2.results.length} passed on v5.0-rc1`,'u2'));
+
+  // defects
+  const b1={id:nextId('BUG'),title:'Excursion flagged at exactly the allowed duration (v5.0-rc1)',severity:'Major',gxp:'High',status:'Investigating',reporter:'u2',assignee:'u1',created:t(-1),
+    found:'Regression run',run:r2.id,tc:'TC-0004',cr:'CR-0001',
+    description:'TC-0004 "Exactly the allowed duration is NOT an excursion" fails on v5.0-rc1: 30 out-of-range minutes with a 30-minute allowance returns excursion = true. Product could be wrongly rejected / quarantined.',
+    steps:'1. Run TC-0004 against CR-0001 candidate\n2. Observe case 2 failure',expected:'excursion = false at exactly 30 minutes (REQ-0005)',actual:'excursion = true',
+    rcCategory:'',rootCause:'',fix:'',capa:{corrective:'',preventive:'',effectiveness:''},history:[{at:t(-1),by:'u2',text:'Raised from failed test TC-0004 in '+r2.id},{at:t(-1),by:'u1',text:'Investigating'}],signatures:[]};
+  const b2={id:nextId('BUG'),title:'Audit trail CSV export truncates comments over 255 characters',severity:'Minor',gxp:'Medium',status:'Closed',reporter:'u2',assignee:'u1',created:t(-60),found:'Periodic review',run:null,tc:null,cr:null,
+    description:'Long audit comments are cut in exported CSV (record not complete — ALCOA+).',steps:'',expected:'Full comment exported',actual:'Truncated at 255 chars',
+    rcCategory:'Design',rootCause:'Export column declared as VARCHAR(255) in legacy report definition.',fix:'Column widened to TEXT; export regenerated.',
+    capa:{corrective:'Re-export last 12 months of audit trail for affected records.',preventive:'Added "max-length field" check to code review checklist.',effectiveness:'No truncation found in 3 consecutive monthly exports.'},
+    history:[{at:t(-60),by:'u2',text:'Raised'},{at:t(-40),by:'u3',text:'Closed'}],signatures:[]};
+  const b3={id:nextId('BUG'),title:'Signature manifest shows local time without timezone',severity:'Minor',gxp:'Medium',status:'Fix In Progress',reporter:'u3',assignee:'u1',created:t(-15),found:'QA review',run:null,tc:'TC-0008',cr:null,
+    description:'Printed signature manifestation lacks a timezone; ambiguous for multi-site inspections (21 CFR 11.50).',steps:'',expected:'UTC timestamp',actual:'Local time, no TZ',
+    rcCategory:'Requirements',rootCause:'URS did not specify timezone for manifestation.',fix:'Render signatures in UTC with explicit suffix.',capa:{corrective:'Update manifestation format.',preventive:'Add timezone requirement to URS template.',effectiveness:''},
+    history:[{at:t(-15),by:'u3',text:'Raised'},{at:t(-9),by:'u1',text:'Fix In Progress'}],signatures:[]};
+  S.defects.push(b1,b2,b3);
+  at(-60,()=>audit('Defect raised',b2.id,b2.title,'u2'));at(-40,()=>{sig(b2,'u3','Closed','CAPA effective',-40);audit('E-signed (Closed)',b2.id,'','u3')});
+  at(-15,()=>audit('Defect raised',b3.id,b3.title,'u3'));at(-1,()=>audit('Defect raised',b1.id,b1.title,'u2'));
+  cr1.defects=[b1.id];
+
+  ev.sort((a,b)=>a.d-b.d).forEach(e=>{S._clock=t(e.d);e.fn()});delete S._clock;
+  audit('Workspace initialised','SYSTEM','Demo data loaded (v'+APP_VERSION+')','u4');
+  save();
+}
+
+/* ---------- shared view logic ---------- */
+const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null};
+const ACT={},CHG={};
+const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
+const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests'};
+const hasRole=r=>me().roles.includes(r);
+const isQA=()=>hasRole('QA');
+function guard(ok,msg){if(!ok)toast(msg);return ok}
+const byAt=(a,b)=>a.at<b.at?-1:a.at>b.at?1:0;
+function latestResult(tcId,filter){let best=null;for(const r of S.runs){if(filter&&!filter(r))continue;const x=r.results.find(z=>z.tc===tcId);if(x&&(!best||r.at>best.run.at))best={status:x.status,run:r,res:x}}return best}
+const rpn=r=>r.risk.s*r.risk.p*r.risk.d;
+const riskClass=n=>n>=12?'High':n>=6?'Medium':'Low';
+function reqState(req){const tcs=S.tests.filter(t=>t.reqs.includes(req.id));if(!tcs.length)return {k:'none',label:'Not covered',tone:'bad',tcs};const lr=tcs.map(t=>latestResult(t.id));if(lr.some(x=>x&&x.status!=='Pass'))return {k:'fail',label:'Failing',tone:'bad',tcs,lr};if(lr.some(x=>!x))return {k:'notrun',label:'Not executed',tone:'warn',tcs,lr};return {k:'pass',label:'Verified',tone:'ok',tcs,lr}}
+const openBug=d=>!['Verified','Closed'].includes(d.status);
+const openCR=c=>!['Closed','Rejected'].includes(c.status);
+const resIcon=s=>s==='Pass'?'<span class="res pass" title="Pass">✓</span>':s==='Fail'?'<span class="res fail" title="Fail">✕</span>':s==='Error'?'<span class="res err" title="Error">!</span>':'<span class="res none" title="Not run">–</span>';
+const sigsAt=(rec,meaning)=>(rec.signatures||[]).filter(s=>s.meaning===meaning&&(!rec.version||!s.version||s.version===rec.version));
+const tabsBar=(k,list,def)=>{const cur=UI.tabs[k]||def||list[0][0];return [cur,`<div class="tabs">${list.map(([v,l])=>`<button class="${v===cur?'on':''}" data-act="tab" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`]};
+const seg=(k,opts)=>`<div class="seg">${opts.map(o=>`<button class="${UI[k]===o?'on':''}" data-act="set" data-k="${k}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+const histHTML=h=>(h&&h.length)?`<div class="timeline">${h.slice().reverse().map(x=>`<div class="ev"><b>${esc(x.text)}</b> · ${esc(userName(x.by))}<div class="when">${fmtUTC(x.at)}</div></div>`).join('')}</div>`:'<div class="muted small">No history.</div>';
+const sigsHTML=rec=>(rec.signatures||[]).length?rec.signatures.slice().reverse().map(s=>sigBlock(s)+(s.version?`<div class="small muted" style="margin:-2px 0 4px 4px">Signed at version ${esc(s.version)}</div>`:'')).join(''):'<div class="muted small">No signatures yet.</div>';
+const userOpts=sel=>S.users.map(u=>`<option value="${u.id}" ${u.id===sel?'selected':''}>${esc(u.name)} — ${esc(u.role)}</option>`).join('');
+const opts=(list,sel)=>list.map(o=>{const [v,l]=Array.isArray(o)?o:[o,o];return `<option value="${esc(v)}" ${v===sel?'selected':''}>${esc(l)}</option>`}).join('');
+const val=(id,root=document)=>{const e=root.querySelector('#'+id);return e?(e.type==='checkbox'?e.checked:e.value):undefined};
+
+ACT.tab=b=>{UI.tabs[b.dataset.k]=b.dataset.v;render()};
+ACT.set=b=>{UI[b.dataset.k]=b.dataset.v;render()};
+ACT.go=b=>{location.hash=b.dataset.href};
+
+/* ---------- insights ---------- */
+function insights(){const I=[];const a=verifyAudit();
+  if(!a.ok)I.push({t:'bad',i:'!',h:'Audit trail integrity failure',x:`Hash chain broken at entry #${a.at}. Investigate as a data integrity incident.`,href:'#/audit'});
+  S.changes.filter(c=>['Implemented','Verified'].includes(c.status)&&c.lang==='javascript'&&c.tests.length).forEach(c=>{const h=sha256(c.targetCode);const last=S.runs.filter(r=>r.cr===c.id&&r.codeHash===h).sort(byAt).at(-1);
+    if(!last)I.push({t:'warn',i:'▶',h:`${c.id}: regression not run on current candidate`,x:'Target code changed since the last recorded run — execute the regression suite before verification.',href:`#/change/${c.id}`});
+    else{const f=last.results.filter(x=>x.status!=='Pass');if(f.length)I.push({t:'bad',i:'✕',h:`${c.id}: regression failing — release blocked`,x:`${f.length} of ${last.results.length} test cases failed in ${last.id} (${f.map(x=>x.tc).join(', ')}).`,href:'#/run/'+last.id})}});
+  const crit=S.defects.filter(d=>openBug(d)&&['Critical','Major'].includes(d.severity));if(crit.length)I.push({t:'bad',i:'✱',h:`${crit.length} open Critical/Major defect${crit.length>1?'s':''}`,x:crit.map(d=>`${d.id} ${d.title}`).join(' · '),href:'#/defects'});
+  S.docs.forEach(d=>{if(d.status==='Effective'&&d.reviewDue){const n=daysUntil(d.reviewDue);if(n<0)I.push({t:'bad',i:'↻',h:`Periodic review overdue: ${d.id}`,x:`${d.title} was due ${-n} days ago (${fmtD(d.reviewDue)}).`,href:'#/doc/'+d.id});else if(n<=30)I.push({t:'warn',i:'↻',h:`Periodic review due in ${n} days: ${d.id}`,x:d.title,href:'#/doc/'+d.id})}});
+  const hiFail=S.reqs.filter(r=>r.gxp==='High'&&reqState(r).k==='fail');if(hiFail.length)I.push({t:'bad',i:'⊞',h:`${hiFail.length} High-GxP requirement${hiFail.length>1?'s':''} failing verification`,x:hiFail.map(r=>r.id).join(', '),href:'#/trace'});
+  const unc=S.reqs.filter(r=>reqState(r).k==='none');if(unc.length)I.push({t:'warn',i:'⊞',h:`${unc.length} requirement${unc.length>1?'s':''} without test coverage`,x:unc.map(r=>`${r.id} ${r.text}`).join(' · '),href:'#/trace'});
+  const nr=S.reqs.filter(r=>reqState(r).k==='notrun');if(nr.length)I.push({t:'warn',i:'▶',h:`${nr.length} requirement${nr.length>1?'s':''} with tests never executed`,x:nr.map(r=>r.id).join(', ')+' — execute the linked manual/automated tests.',href:'#/trace'});
+  const noCapa=S.defects.filter(d=>openBug(d)&&d.gxp!=='Low'&&d.rootCause&&!(d.capa.corrective&&d.capa.preventive));if(noCapa.length)I.push({t:'warn',i:'✱',h:`${noCapa.length} defect${noCapa.length>1?'s':''} missing CAPA`,x:noCapa.map(d=>d.id).join(', '),href:'#/defects'});
+  const inrev=S.docs.filter(d=>d.status==='In Review');if(inrev.length)I.push({t:'info',i:'▤',h:`${inrev.length} document${inrev.length>1?'s':''} awaiting review/approval`,x:inrev.map(d=>`${d.id} ${d.title}`).join(' · '),href:'#/docs'});
+  const unsigned=S.runs.filter(r=>!sigsAt(r,'Reviewed').length);if(unsigned.length)I.push({t:'info',i:'✒',h:`${unsigned.length} test run${unsigned.length>1?'s':''} awaiting independent review`,x:unsigned.map(r=>r.id).join(', '),href:'#/tests'});
+  const pend=S.changes.filter(c=>c.status==='Assessed');if(pend.length)I.push({t:'info',i:'⇄',h:`${pend.length} change${pend.length>1?'s':''} awaiting QA approval`,x:pend.map(c=>c.id+' '+c.title).join(' · '),href:'#/changes'});
+  if(a.ok)I.push({t:'ok',i:'✓',h:'Audit trail intact',x:`${a.n} entries, SHA-256 hash chain verified (head ${short(a.head)}).`,href:'#/audit'});
+  const o={bad:0,warn:1,info:2,ok:3};return I.sort((x,y)=>o[x.t]-o[y.t])}
+const insightHTML=i=>`<a class="insight ${i.t}" href="${i.href}" style="color:inherit"><div class="dot">${i.i}</div><div class="tx"><b>${esc(i.h)}</b><span class="muted">${esc(i.x)}</span></div></a>`;
+
+function readiness(c){const h=sha256(c.targetCode||'');const last=S.runs.filter(r=>r.cr===c.id&&r.codeHash===h).sort(byAt).at(-1);const bugs=S.defects.filter(d=>d.cr===c.id&&openBug(d));
+  const items=[[sigsAt(c,'Approved').length>0,'QA approval before implementation'],[c.plan.every(p=>p.done),`Migration plan complete (${c.plan.filter(p=>p.done).length}/${c.plan.length})`]];
+  if(c.lang==='javascript'&&c.tests.length)items.push([!!last&&last.results.every(x=>x.status==='Pass'),last?`Regression on current candidate: ${last.results.filter(x=>x.status==='Pass').length}/${last.results.length} pass (${last.id})`:'Regression on current candidate: not run']);
+  items.push([!bugs.length,bugs.length?`${bugs.length} open linked defect${bugs.length>1?'s':''} (${bugs.map(b=>b.id).join(', ')})`:'No open linked defects']);
+  items.push([sigsAt(c,'Verified').length>0,'Verification e-signature']);
+  return items}
+
+/* ---------- dashboard ---------- */
+function vDashboard(){
+  const states=S.reqs.map(reqState);const ver=states.filter(s=>s.k==='pass').length;const cov=S.reqs.length?Math.round(ver/S.reqs.length*100):0;
+  const lr=S.tests.map(t=>latestResult(t.id)).filter(Boolean);const pass=lr.filter(x=>x.status==='Pass').length;const pr=lr.length?Math.round(pass/lr.length*100):0;
+  const ob=S.defects.filter(openBug);const oc=S.changes.filter(openCR);
+  const effective=S.docs.filter(d=>d.status==='Effective').length;
+  const ins=insights();
+  const rel=S.changes.filter(c=>['Implemented','Verified','Approved'].includes(c.status));
+  const bar=(label,parts,total)=>`<div class="br"><span>${label}</span><div class="tr">${parts.map(([n,c])=>n?`<i style="width:${n/total*100}%;background:${c}"></i>`:'').join('')}</div><b>${parts.reduce((a,p)=>a+p[0],0)}</b></div>`;
+  const dc=s=>S.docs.filter(d=>d.status===s).length;const bc=s=>S.defects.filter(d=>d.status===s).length;
+  return {title:'Dashboard',html:`
+  <div class="ph"><div class="t"><h1>Validation command center</h1><p>${esc(S.system.org)} · ${esc(S.system.name)} · ${esc(S.system.gamp)}</p></div>
+    <div class="row hide-m"><a class="btn" href="#/trace">⊞ Traceability</a><a class="btn pri" href="#/tests">▶ Run tests</a></div></div>
+  <div class="grid g4">
+    <div class="card kpi"><div class="l">Requirements verified</div><div class="v">${cov}%</div><div class="s">${ver} of ${S.reqs.length} traced to passing tests</div><div class="bar"><i style="width:${cov}%"></i></div></div>
+    <div class="card kpi"><div class="l">Test pass rate</div><div class="v">${pr}%</div><div class="s">${pass}/${lr.length} latest results · ${S.runs.length} runs</div><div class="bar"><i style="width:${pr}%"></i></div></div>
+    <a class="card kpi" href="#/defects" style="color:inherit"><div class="l">Open defects</div><div class="v" style="color:${ob.some(d=>d.severity!=='Minor')?'var(--bad)':'inherit'}">${ob.length}</div><div class="s">${ob.filter(d=>d.severity!=='Minor').length} Critical/Major · ${S.defects.length-ob.length} closed</div></a>
+    <a class="card kpi" href="#/changes" style="color:inherit"><div class="l">Open changes</div><div class="v">${oc.length}</div><div class="s">${oc.filter(c=>/Migration/.test(c.type)).length} code/data migrations · ${effective} docs effective</div></a>
+  </div>
+  <div class="grid g2 dash2" style="margin-top:14px">
+    <div class="card p0"><div style="padding:14px 16px 6px" class="row"><h2 style="margin:0;flex:1">Compliance insights</h2><span class="pill">${ins.filter(i=>i.t==='bad').length} critical · ${ins.filter(i=>i.t==='warn').length} warnings</span></div>${ins.map(insightHTML).join('')}</div>
+    <div>
+      ${rel.map(c=>{const it=readiness(c);const ok=it.filter(x=>x[0]).length;return `<div class="card"><div class="row"><h2 style="margin:0;flex:1">Release readiness</h2>${pill(c.status)}</div><div class="small muted" style="margin:4px 0 8px"><a href="#/change/${c.id}" class="mono">${c.id}</a> ${esc(c.title)}</div>
+        <div class="row" style="align-items:center;gap:16px;flex-wrap:nowrap"><div class="ring" style="--p:${Math.round(ok/it.length*100)}"><div>${ok}/${it.length}<small>gates met</small></div></div><div style="flex:1">${it.map(([k,l])=>`<div class="small" style="padding:3px 0">${k?'<span style="color:var(--ok)">✓</span>':'<span style="color:var(--bad)">✕</span>'} ${esc(l)}</div>`).join('')}</div></div></div>`}).join('')}
+      <div class="card"><h2>Status overview</h2><div class="bars">
+        ${bar('Documents',[[dc('Draft'),'#a5b4fc'],[dc('In Review'),'var(--warn)'],[dc('Approved'),'var(--info)'],[dc('Effective'),'var(--ok)']],Math.max(1,S.docs.length))}
+        ${bar('Defects',[[bc('Open')+bc('Investigating'),'var(--bad)'],[bc('Fix In Progress')+bc('Ready for Verification'),'var(--warn)'],[bc('Verified')+bc('Closed'),'var(--ok)']],Math.max(1,S.defects.length))}
+        ${bar('Test cases',[[lr.filter(x=>x.status==='Pass').length,'var(--ok)'],[lr.filter(x=>x.status!=='Pass').length,'var(--bad)'],[S.tests.length-lr.length,'#c7cbe0']],Math.max(1,S.tests.length))}
+        ${bar('Requirements',[[ver,'var(--ok)'],[states.filter(s=>s.k==='fail').length,'var(--bad)'],[states.filter(s=>s.k==='notrun').length,'var(--warn)'],[states.filter(s=>s.k==='none').length,'#c7cbe0']],Math.max(1,S.reqs.length))}
+      </div></div>
+      <div class="card"><div class="row"><h2 style="flex:1;margin:0">Recent activity</h2><a href="#/audit" class="small">Audit trail →</a></div><div class="timeline" style="margin-top:10px">${S.audit.slice(-7).reverse().map(e=>`<div class="ev"><b>${esc(e.action)}</b> ${e.entity!=='SYSTEM'?link(e.entity):''}<div class="when">${esc(userName(e.user))} · ${ago(e.at)}</div></div>`).join('')}</div></div>
+    </div>
+  </div>`}}
+
+/* ---------- documents ---------- */
+const DOC_FLOW=['Draft','In Review','Approved','Effective'];
+function vDocs(){
+  const q=UI.docQ.toLowerCase();const list=S.docs.filter(d=>(UI.docF==='All'||d.status===UI.docF)&&(!UI.docT||d.type===UI.docT)&&(!q||(d.id+' '+d.title+' '+d.content).toLowerCase().includes(q)));
+  return {title:'Documents',fab:'docNew',html:`<div class="ph"><div class="t"><h1>GxP documents</h1><p>Controlled documents with lifecycle, versioning and Part 11 e-signatures.</p></div><button class="btn pri hide-m" data-act="docNew">+ New document</button></div>
+  <div class="toolbar"><input class="search" data-inp="docQ" placeholder="Search documents…" value="${esc(UI.docQ)}"><select class="inp" style="width:auto" data-chg="docT"><option value="">All types</option>${Object.entries(DOC_TYPES).map(([k,v])=>`<option value="${k}" ${UI.docT===k?'selected':''}>${esc(v)}</option>`).join('')}</select></div>
+  <div class="toolbar">${seg('docF',['All','Draft','In Review','Approved','Effective','Retired'])}</div>
+  <div class="card p0 list">${list.length?list.map(d=>{const n=d.reviewDue&&d.status==='Effective'?daysUntil(d.reviewDue):null;return `<a class="item" href="#/doc/${d.id}"><span class="id">${d.id}</span><div class="main1"><div class="ttl">${esc(d.title)}</div><div class="meta"><span>${esc(DOC_TYPES[d.type]||d.type)}</span><span>v${esc(d.version)}</span><span>${esc(userName(d.owner))}</span>${n!=null?`<span style="color:${n<0?'var(--bad)':n<=30?'var(--warn)':'inherit'}">Review ${n<0?'overdue':'due'} ${fmtD(d.reviewDue)}</span>`:''}</div></div>${pill(d.status)}</a>`}).join(''):'<div class="empty">No documents match.</div>'}</div>`}}
+CHG.docT=e=>{UI.docT=e.value;render()};
+ACT.docNew=()=>{const m=modal('New controlled document',`
+  <label class="f">Document type<select class="inp" id="ndT">${Object.entries(DOC_TYPES).map(([k,v])=>`<option value="${k}">${esc(v)} (${k})</option>`).join('')}</select></label>
+  <label class="f">Title<input class="inp" id="ndN" placeholder="e.g. LabTrack LIMS v5.0 PQ Protocol"></label>
+  <label class="f">Owner<select class="inp" id="ndO">${userOpts(S.currentUser)}</select></label>
+  <label class="chk"><input type="checkbox" id="ndTpl" checked> Start from the GxP template for this type</label>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="ndGo">Create draft</button>`);
+  $('#ndGo',m).onclick=()=>{const title=val('ndN',m).trim();if(!title){toast('Title is required');return}const type=val('ndT',m);const id=nextId('DOC');
+    let content=val('ndTpl',m)?(TEMPLATES[type]||'# {title}').replace('{title}',title):`# ${title}\n`;if(type==='RTM')content=rtmMarkdown(title);
+    S.docs.unshift({id,type,title,version:'0.1',status:'Draft',owner:val('ndO',m),content,created:nowISO(),updated:nowISO(),effective:null,reviewDue:null,history:[{at:nowISO(),by:S.currentUser,text:'Created v0.1 draft'}],signatures:[]});
+    audit('Document created',id,title);save();closeModal();UI.tabs.doc='edit';location.hash='#/doc/'+id}};
+function docHead(d){return `<div class="dochead"><div><span>Document ID</span><b class="mono">${d.id}</b></div><div><span>Version</span><b>${esc(d.version)}</b></div><div><span>Status</span><b>${esc(d.status)}</b></div><div><span>${d.effective?'Effective':'Owner'}</span><b>${d.effective?fmtD(d.effective):esc(userName(d.owner))}</b></div></div>`}
+function docHTML(d){return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(d.id)} ${esc(d.title)}</title><style>body{font:14px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;max-width:820px;margin:30px auto;padding:0 20px;color:#111}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:5px 8px;text-align:left;vertical-align:top}th{background:#f3f4f8}.dochead{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #ccc;margin-bottom:16px}.dochead div{padding:6px 8px;border-right:1px solid #ccc}.dochead span{display:block;font-size:11px;color:#666;text-transform:uppercase}.sig{border:1px dashed #0a7;padding:8px;margin:6px 0;font-size:13px;display:flex;gap:8px}.hashv{font-family:monospace;font-size:11px;color:#666}.muted{color:#666}pre{background:#f5f5f8;padding:8px;overflow:auto}a{color:inherit;text-decoration:none}</style></head><body>${docHead(d)}${md(d.content)}<h2>Signature manifest</h2>${(d.signatures||[]).map(sigBlock).join('')||'<p>No signatures.</p>'}<p class="muted" style="font-size:11px;margin-top:30px">Exported from GxP Studio v${APP_VERSION} · ${fmtUTC(nowISO())} · record sha256 ${recordHash(d)}</p></body></html>`}
+function vDoc(p){const d=S.docs.find(x=>x.id===p.id);if(!d)return {title:'Not found',html:'<div class="empty">Document not found.</div>'};
+  const owner=d.owner===S.currentUser;const reviewed=sigsAt(d,'Reviewed').length>0;
+  let acts='';
+  if(d.status==='Draft')acts+=`<button class="btn pri" data-act="docSubmit">Submit for review</button>`;
+  if(d.status==='In Review'){acts+=`<button class="btn" data-act="docReview">✍ Review &amp; sign</button><button class="btn pri" data-act="docApprove">✍ QA approve</button><button class="btn" data-act="docReturn">Return to draft</button>`}
+  if(d.status==='Approved')acts+=`<button class="btn pri" data-act="docEffective">Make effective</button>`;
+  if(d.status==='Effective')acts+=`<button class="btn" data-act="docRevise">Revise (new version)</button><button class="btn" data-act="docPeriodic">✍ Periodic review</button><button class="btn bad" data-act="docRetire">Retire</button>`;
+  if(d.status==='Draft'&&/^0\./.test(d.version))acts+=`<button class="btn bad" data-act="docDelete">Delete draft</button>`;
+  const [tab,tb]=tabsBar('doc',[['view','Document'],...(d.status==='Draft'?[['edit','Edit']]:[]),['sig',`Signatures (${(d.signatures||[]).length})`],['hist','History']],'view');
+  let body='';
+  if(tab==='edit'&&d.status==='Draft')body=`<div class="card"><div class="fields"><label class="f">Title<input class="inp" id="deT" value="${esc(d.title)}"></label><label class="f">Owner<select class="inp" id="deO">${userOpts(d.owner)}</select></label></div>
+    <label class="f" style="margin-top:12px">Content (Markdown: # headings, - lists, | tables |, **bold**, \`code\`; IDs like REQ-0001 auto-link)<textarea class="inp code" id="deC" style="min-height:420px;white-space:pre-wrap">${esc(d.content)}</textarea></label>
+    <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" data-act="tab" data-k="doc" data-v="view">Preview</button><button class="btn pri" data-act="docSave">Save draft</button></div></div>`;
+  else if(tab==='sig')body=`<div class="card">${sigsHTML(d)}</div>`;
+  else if(tab==='hist')body=`<div class="card">${histHTML(d.history)}</div>`;
+  else body=`<div class="docpaper">${docHead(d)}${md(d.content)}${(d.signatures||[]).length?`<h2>Signature manifest</h2>${d.signatures.map(sigBlock).join('')}`:''}</div>`;
+  return {title:d.id,back:'#/docs',html:`<div class="doc" style="max-width:none">
+    <div class="ph"><div class="t"><div class="row"><span class="mono muted">${d.id}</span>${pill(d.status)}<span class="pill brand">${esc(DOC_TYPES[d.type]||d.type)}</span><span class="pill">v${esc(d.version)}</span></div><h1 style="margin-top:6px">${esc(d.title)}</h1>
+    <p>Owner ${esc(userName(d.owner))} · updated ${ago(d.updated)}${d.reviewDue?` · periodic review due ${fmtD(d.reviewDue)}`:''}${reviewed&&d.status==='In Review'?' · <b style="color:var(--ok)">reviewed</b>':''}</p>${stepper(DOC_FLOW,d.status==='Retired'||d.status==='Superseded'?'Effective':d.status)}</div></div>
+    <div class="row noprint" style="margin-bottom:12px">${acts}<span style="flex:1"></span>${blobLink(docHTML(d),`${d.id}_v${d.version}.html`,'text/html','⬇ Export')}<button class="btn" onclick="window.print()">Print / PDF</button></div>
+    ${tb}${body}</div>`}}
+const curDoc=()=>S.docs.find(x=>x.id===parseHash().id);
+ACT.docSave=()=>{const d=curDoc();const c=val('deC'),t=val('deT').trim(),o=val('deO');if(c===d.content&&t===d.title&&o===d.owner){toast('No changes');return}
+  const [M,m]=d.version.split('.').map(Number);d.version=`${M}.${(m||0)+1}`;d.content=c;d.title=t||d.title;d.owner=o;d.updated=nowISO();hist(d,'Edited → v'+d.version);audit('Document modified',d.id,'v'+d.version);save();UI.tabs.doc='view';render();toast('Saved v'+d.version)};
+ACT.docSubmit=()=>{const d=curDoc();d.status='In Review';d.updated=nowISO();hist(d,'Submitted for review (v'+d.version+')');audit('Submitted for review',d.id,'v'+d.version);save();render();toast('Submitted for review')};
+ACT.docReview=()=>{const d=curDoc();if(!guard(d.owner!==S.currentUser,'Segregation of duties: the owner cannot review their own document. Switch user (top right).'))return;
+  esign({record:d,meanings:['Reviewed'],title:'Review signature',onSign:()=>hist(d,'Reviewed by '+me().name)})};
+ACT.docApprove=()=>{const d=curDoc();if(!guard(isQA(),'Only users with the QA role can approve. Switch to Morgan Lee (QA Approver).'))return;if(!guard(d.owner!==S.currentUser,'Segregation of duties: owner cannot approve own document.'))return;
+  if(!guard(sigsAt(d,'Reviewed').length>0,'A review signature is required before QA approval.'))return;
+  esign({record:d,meanings:['Approved'],title:'QA approval signature',onSign:()=>{d.status='Approved';d.updated=nowISO();hist(d,'Approved');audit('Status → Approved',d.id,'v'+d.version)}})};
+ACT.docReturn=()=>{const d=curDoc();const m=modal('Return to draft',`<label class="f">Reason (recorded in audit trail)<textarea class="inp" id="rr"></textarea></label>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="rrGo">Return</button>`);$('#rrGo',m).onclick=()=>{const r=val('rr',m).trim();if(!r){toast('Reason required');return}d.status='Draft';hist(d,'Returned to draft: '+r);audit('Returned to draft',d.id,r);save();closeModal();render()}};
+ACT.docEffective=()=>{const d=curDoc();if(!guard(isQA(),'Only QA can make a document effective.'))return;const [M,m]=d.version.split('.').map(Number);if(m)d.version=`${M+1}.0`;
+  d.status='Effective';d.effective=nowISO();d.reviewDue=new Date(Date.now()+730*DAY).toISOString();d.updated=nowISO();
+  S.docs.filter(x=>x!==d&&x.supersededBy===d.id).forEach(x=>x.status='Superseded');hist(d,'Effective v'+d.version);audit('Made effective',d.id,'v'+d.version);save();render();toast('Effective v'+d.version)};
+ACT.docRevise=()=>{const d=curDoc();d.history.push({at:nowISO(),by:S.currentUser,text:'Revision started from v'+d.version,snapshot:d.content});const [M]=d.version.split('.').map(Number);d.version=`${M}.1`;d.status='Draft';d.effective=null;d.updated=nowISO();audit('Revision started',d.id,'v'+d.version);save();UI.tabs.doc='edit';render()};
+ACT.docPeriodic=()=>{const d=curDoc();esign({record:d,meanings:['Periodic review — no change required','Periodic review — revision required'],title:'Periodic review',onSign:s=>{if(/no change/.test(s.meaning))d.reviewDue=new Date(Date.now()+730*DAY).toISOString();hist(d,s.meaning);audit('Periodic review',d.id,s.meaning)}})};
+ACT.docRetire=b=>{const d=curDoc();if(!guard(isQA(),'Only QA can retire documents.'))return;armed(b,()=>{d.status='Retired';hist(d,'Retired');audit('Document retired',d.id,'v'+d.version);save();render()})};
+ACT.docDelete=b=>armed(b,()=>{const d=curDoc();S.docs=S.docs.filter(x=>x!==d);audit('Draft deleted',d.id,d.title);save();location.hash='#/docs'});
+
+/* ---------- traceability ---------- */
+function rtmMarkdown(title){return `# ${title||'Requirements Traceability Matrix'}\n\nGenerated ${fmtUTC(nowISO())} from live data. Coverage: ${S.reqs.filter(r=>reqState(r).k==='pass').length}/${S.reqs.length} requirements verified.\n\n| Requirement | Description | GxP | Risk (RPN) | Test cases | Latest result | Status |\n|---|---|---|---|---|---|---|\n`+
+  S.reqs.map(r=>{const s=reqState(r);return `| ${r.id} | ${r.text} | ${r.gxp} | ${riskClass(rpn(r))} (${rpn(r)}) | ${s.tcs.map(t=>t.id).join(', ')||'—'} | ${s.tcs.map(t=>{const l=latestResult(t.id);return l?`${l.status} (${l.run.id})`:'Not run'}).join(', ')||'—'} | ${s.label} |`}).join('\n')+`\n\n## Open defects\n`+(S.defects.filter(openBug).map(d=>`- ${d.id} ${d.title} (${d.severity})`).join('\n')||'- None')}
+function vTrace(p){const hl=p.q.get('req');
+  const rows=S.reqs.map(r=>({r,s:reqState(r)})).filter(x=>UI.traceF==='All'||x.s.label===UI.traceF);
+  const c=k=>S.reqs.filter(r=>reqState(r).k===k).length;
+  return {title:'Traceability',fab:'reqNew',html:`<div class="ph"><div class="t"><h1>Requirements traceability</h1><p>URS → risk → test cases → evidence → defects. Click a requirement to edit it and its risk.</p></div><div class="row"><button class="btn" data-act="genRTM">▤ Generate RTM document</button><button class="btn pri hide-m" data-act="reqNew">+ Requirement</button></div></div>
+  <div class="grid g4"><div class="card kpi"><div class="l">Verified</div><div class="v" style="color:var(--ok)">${c('pass')}</div></div><div class="card kpi"><div class="l">Failing</div><div class="v" style="color:var(--bad)">${c('fail')}</div></div><div class="card kpi"><div class="l">Not executed</div><div class="v" style="color:var(--warn)">${c('notrun')}</div></div><div class="card kpi"><div class="l">Not covered</div><div class="v">${c('none')}</div></div></div>
+  <div class="toolbar" style="margin-top:14px">${seg('traceF',['All','Verified','Failing','Not executed','Not covered'])}</div>
+  <div class="tblwrap"><table class="t matrix"><thead><tr><th>Req</th><th style="min-width:240px">Requirement</th><th>GxP</th><th>Risk</th><th>Tests &amp; latest result</th><th>Defects</th><th>Status</th></tr></thead><tbody>
+  ${rows.map(({r,s})=>{const bugs=S.defects.filter(d=>openBug(d)&&s.tcs.some(t=>t.id===d.tc));return `<tr style="${hl===r.id?'background:var(--brandSoft)':''}"><td><a href="#" class="mono" data-act="reqEdit" data-id="${r.id}">${r.id}</a></td><td>${esc(r.text)}<div class="small muted">${esc(r.category)}</div></td><td>${pill(r.gxp)}</td><td>${pill(riskClass(rpn(r))+' · '+rpn(r),statusTone(riskClass(rpn(r))))}</td>
+    <td>${s.tcs.map(t=>{const l=latestResult(t.id);return `<div class="row" style="gap:6px;flex-wrap:nowrap">${resIcon(l&&l.status)}<a href="#/test/${t.id}" class="mono">${t.id}</a>${l?`<a href="#/run/${l.run.id}" class="small muted mono">${l.run.id}</a>`:''}</div>`}).join('')||'<span class="muted">—</span>'}</td>
+    <td>${bugs.map(b=>link(b.id)).join('<br>')||'<span class="muted">—</span>'}</td><td>${pill(s.label,s.tone)}</td></tr>`}).join('')}</tbody></table></div>`}}
+function reqModal(r){const isNew=!r;r=r||{text:'',category:'',gxp:'High',risk:{s:2,p:2,d:2},source:''};const sc=n=>[1,2,3].map(v=>`<option ${v===n?'selected':''}>${v}</option>`).join('');
+  const m=modal(isNew?'New requirement':`Edit ${r.id}`,`<label class="f">Requirement<textarea class="inp" id="rqT">${esc(r.text)}</textarea></label>
+  <div class="fields"><label class="f">Category<input class="inp" id="rqC" value="${esc(r.category)}" placeholder="e.g. Part 11"></label><label class="f">GxP impact<select class="inp" id="rqG">${opts(['High','Medium','Low'],r.gxp)}</select></label><label class="f">Source document<select class="inp" id="rqD"><option value="">—</option>${S.docs.map(d=>`<option value="${d.id}" ${d.id===r.source?'selected':''}>${d.id} ${esc(d.title)}</option>`).join('')}</select></label></div>
+  <div class="small b">FMEA risk (1 low – 3 high)</div><div class="fields"><label class="f">Severity<select class="inp" id="rqS">${sc(r.risk.s)}</select></label><label class="f">Probability<select class="inp" id="rqP">${sc(r.risk.p)}</select></label><label class="f">Detectability<select class="inp" id="rqDe">${sc(r.risk.d)}</select></label></div>
+  <div class="small muted">RPN = S × P × D. ≥12 High, 6–11 Medium, ≤5 Low (SOP-QA-012 §4).</div>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="rqGo">Save</button>`);
+  $('#rqGo',m).onclick=()=>{const text=val('rqT',m).trim();if(!text){toast('Requirement text required');return}
+    const o=isNew?{id:nextId('REQ'),created:nowISO()}:r;Object.assign(o,{text,category:val('rqC',m).trim(),gxp:val('rqG',m),source:val('rqD',m),risk:{s:+val('rqS',m),p:+val('rqP',m),d:+val('rqDe',m)}});
+    if(isNew)S.reqs.push(o);audit(isNew?'Requirement created':'Requirement modified',o.id,`${o.gxp} · RPN ${rpn(o)}`);save();closeModal();render()}}
+ACT.reqNew=()=>reqModal(null);
+ACT.reqEdit=b=>reqModal(S.reqs.find(r=>r.id===b.dataset.id));
+ACT.genRTM=()=>{const id=nextId('DOC');const title='LabTrack LIMS Requirements Traceability Matrix';S.docs.unshift({id,type:'RTM',title,version:'0.1',status:'Draft',owner:S.currentUser,content:rtmMarkdown(title),created:nowISO(),updated:nowISO(),history:[{at:nowISO(),by:S.currentUser,text:'Generated from live traceability data'}],signatures:[]});audit('Document generated',id,'RTM');save();UI.tabs.doc='view';location.hash='#/doc/'+id;toast('RTM generated as '+id)};
+
+/* ---------- code baselines ---------- */
+function codeTargets(){return [...S.code.map(c=>({id:c.id,label:`${c.id} · ${c.label} (${c.status})`,code:c.code,lang:c.lang})),...S.changes.filter(c=>c.targetCode&&openCR(c)).map(c=>({id:c.id,label:`${c.id} candidate · ${c.toLabel||'target'} (${c.status})`,code:c.targetCode,lang:c.lang}))]}
+function vCode(p){
+  if(p.id){const c=S.code.find(x=>x.id===p.id);if(!c)return {title:'Not found',html:'<div class="empty">Not found</div>'};
+    const others=codeTargets().filter(x=>x.id!==c.id);const cmp=UI.codeCmp&&others.find(x=>x.id===UI.codeCmp)||others[0];const df=cmp?diffHTML(c.code,cmp.code):null;const okHash=sha256(c.code)===c.hash;
+    return {title:c.id,back:'#/code',html:`<div class="ph"><div class="t"><div class="row"><span class="mono muted">${c.id}</span>${pill(c.status)}<span class="pill">${esc(c.lang)}</span></div><h1 style="margin-top:6px">${esc(c.title)}</h1><p>Registered ${fmtD(c.created)} by ${esc(userName(c.by))}${c.cr?` via ${link(c.cr)}`:''}</p></div>${blobLink(c.code,`${c.label}.js`,'text/javascript','⬇ Download')}</div>
+    <div class="card"><div class="row"><b>SHA-256</b><span class="hashv" style="flex:1">${c.hash}</span>${okHash?pill('Integrity verified','ok'):pill('HASH MISMATCH','bad')}</div></div>
+    <div class="card"><h2>Source</h2><pre class="codebox">${esc(c.code)}</pre></div>
+    ${cmp?`<div class="card"><div class="row" style="margin-bottom:10px"><h2 style="margin:0;flex:1">Compare</h2><select class="inp" style="width:auto" data-chg="codeCmp">${others.map(o=>`<option value="${o.id}" ${o.id===cmp.id?'selected':''}>${esc(o.label)}</option>`).join('')}</select></div><div class="small muted" style="margin-bottom:8px"><span style="color:var(--ok)">+${df.add}</span> / <span style="color:var(--bad)">−${df.del}</span> lines</div>${df.html}</div>`:''}`}}
+  return {title:'Code Baselines',html:`<div class="ph"><div class="t"><h1>Code baselines</h1><p>Validated, hash-sealed versions of the system under test. New baselines are promoted only by closing a change control.</p></div></div>
+  <div class="card p0 list">${S.code.slice().reverse().map(c=>`<a class="item" href="#/code/${c.id}"><span class="id">${c.id}</span><div class="main1"><div class="ttl">${esc(c.title)}</div><div class="meta"><span>${esc(c.label)}</span><span class="mono">${short(c.hash)}</span><span>${fmtD(c.created)}</span></div></div>${pill(c.status)}</a>`).join('')}</div>
+  <h2 style="margin:18px 0 10px">Candidates in change control</h2><div class="card p0 list">${S.changes.filter(c=>c.targetCode&&openCR(c)).map(c=>`<a class="item" href="#/change/${c.id}"><span class="id">${c.id}</span><div class="main1"><div class="ttl">${esc(c.toLabel||c.title)}</div><div class="meta"><span>${esc(c.title)}</span><span class="mono">${short(sha256(c.targetCode))}</span></div></div>${pill(c.status)}</a>`).join('')||'<div class="empty">No candidates.</div>'}</div>`}}
+CHG.codeCmp=e=>{UI.codeCmp=e.value;render()};
+
+/* ---------- audit trail ---------- */
+function auditCSV(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';return 'seq,timestamp_utc,user,action,record,detail,prev_hash,hash\n'+S.audit.map(e=>[e.seq,e.at,userName(e.user),e.action,e.entity,e.detail,e.prev,e.hash].map(q).join(',')).join('\n')}
+function vAudit(){const q=UI.auditQ.toLowerCase();const list=S.audit.filter(e=>(!UI.auditU||e.user===UI.auditU)&&(!q||(e.action+' '+e.entity+' '+e.detail).toLowerCase().includes(q))).slice().reverse();const v=UI.verify;
+  return {title:'Audit Trail',html:`<div class="ph"><div class="t"><h1>Audit trail</h1><p>Secure, computer-generated, time-stamped and append-only (21 CFR 11.10(e)). Each entry is SHA-256 chained to the previous entry.</p></div><div class="row"><button class="btn pri" data-act="auditVerify">⛨ Verify chain</button>${blobLink(auditCSV(),'audit_trail.csv','text/csv','⬇ CSV')}</div></div>
+  ${v?`<div class="card" style="border-color:${v.ok?'var(--ok)':'var(--bad)'}"><b style="color:${v.ok?'var(--ok)':'var(--bad)'}">${v.ok?`✓ Chain intact — ${v.n} entries verified`:`✕ Chain broken at entry #${v.at}`}</b><div class="hashv">${v.ok?'Head hash '+v.head:''} · checked ${fmtUTC(v.when)}</div></div>`:''}
+  <div class="toolbar" style="margin-top:12px"><input class="search" data-inp="auditQ" placeholder="Search action, record, detail…" value="${esc(UI.auditQ)}"><select class="inp" style="width:auto" data-chg="auditU"><option value="">All users</option>${S.users.map(u=>`<option value="${u.id}" ${UI.auditU===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select></div>
+  <div class="tblwrap"><table class="t"><thead><tr><th>#</th><th>Timestamp (UTC)</th><th>User</th><th>Action</th><th>Record</th><th class="hide-m">Detail</th><th class="hide-m">Hash</th></tr></thead><tbody>
+  ${list.slice(0,300).map(e=>`<tr><td class="mono">${e.seq}</td><td class="mono" style="white-space:nowrap">${fmtUTC(e.at).replace(' UTC','')}</td><td style="white-space:nowrap">${esc(userName(e.user))}</td><td>${esc(e.action)}<div class="small muted" style="display:none"></div></td><td>${e.entity==='SYSTEM'?'<span class="muted">system</span>':link(e.entity)}</td><td class="hide-m small">${esc(e.detail)}</td><td class="hide-m hashv">${short(e.hash)}</td></tr>`).join('')}</tbody></table></div>
+  ${list.length>300?`<div class="small muted" style="margin-top:8px">Showing latest 300 of ${list.length}. Export CSV for the full trail.</div>`:''}`}}
+CHG.auditU=e=>{UI.auditU=e.value;render()};
+ACT.auditVerify=()=>{UI.verify=Object.assign(verifyAudit(),{when:nowISO()});audit('Audit trail verified',UI.verify.ok?'SYSTEM':'SYSTEM',UI.verify.ok?'Chain intact':'Chain broken at #'+UI.verify.at);UI.verify.n=S.audit.length;save();render()};
+
+/* ---------- settings / more ---------- */
+function vSettings(){const size=new Blob([JSON.stringify(S)]).size;
+  return {title:'Settings',html:`<div class="ph"><div class="t"><h1>Settings</h1><p>Workspace, users and data. All data stays on this device (localStorage) — works fully offline.</p></div></div>
+  <div class="grid g2"><div class="card"><h2>Users &amp; roles</h2><div class="small muted" style="margin-bottom:8px">Switch the active user from the header to exercise segregation of duties. Demo PIN for e-signatures: <b>1234</b>.</div>
+    ${S.users.map(u=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)">${avatar(u.id)}<div style="flex:1"><b>${esc(u.name)}</b><div class="small muted">${esc(u.role)} · roles: ${u.roles.join(', ')}</div></div>${u.id===S.currentUser?pill('Active','ok'):`<button class="btn sm" data-act="switchUser" data-id="${u.id}">Sign in</button>`}</div>`).join('')}</div>
+  <div class="card"><h2>Appearance</h2><div class="seg">${['auto','light','dark'].map(t=>`<button class="${S.theme===t?'on':''}" data-act="theme" data-v="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div>
+    <h2 style="margin-top:18px">System</h2><dl class="kv"><dt>Organisation</dt><dd>${esc(S.system.org)}</dd><dt>System</dt><dd>${esc(S.system.name)}</dd><dt>GAMP</dt><dd>${esc(S.system.gamp)}</dd><dt>App version</dt><dd>GxP Studio v${APP_VERSION}</dd><dt>Storage used</dt><dd>${(size/1024).toFixed(1)} KB</dd><dt>Network</dt><dd>${navigator.onLine?'Online':'Offline'} · offline-ready</dd></dl></div>
+  <div class="card"><h2>Data</h2><div class="small muted" style="margin-bottom:10px">Export the complete workspace (records, evidence, signatures, audit trail) as JSON for archiving or moving to another device.</div>
+    <div class="row">${blobLink(JSON.stringify(S,null,1),`gxp-studio-${new Date().toISOString().slice(0,10)}.json`,'application/json','⬇ Export JSON')}<label class="btn">⬆ Import JSON<input type="file" accept=".json,application/json" data-chg="importJSON" style="display:none"></label></div>
+    <div class="row" style="margin-top:12px"><button class="btn bad" data-act="resetDemo">Reset demo data</button><button class="btn bad" data-act="blankWS">Start blank workspace</button></div></div>
+  <div class="card"><h2>Install on iPhone / Android</h2><div class="small">iPhone: open this page in <b>Safari</b> → Share → <b>Add to Home Screen</b>. Android: Chrome menu → <b>Install app</b>. Once installed it runs offline.</div></div></div>`}}
+ACT.theme=b=>{S.theme=b.dataset.v;save();applyTheme();render()};
+ACT.switchUser=b=>{S.currentUser=b.dataset.id;audit('User signed in','SYSTEM',me().name+' ('+me().role+')');save();render();toast('Signed in as '+me().name)};
+CHG.user=e=>{S.currentUser=e.value;audit('User signed in','SYSTEM',me().name+' ('+me().role+')');save();render();toast('Signed in as '+me().name)};
+ACT.resetDemo=b=>armed(b,()=>{seed();UI.tcSel.clear();location.hash='#/dashboard';render();toast('Demo data restored')});
+ACT.blankWS=b=>armed(b,()=>{const users=S.users,theme=S.theme;S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:users[0].id,theme,users,system:{name:'My GxP System',org:'My Organisation',gamp:'Category 5 — custom code',site:''},docs:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};audit('Workspace initialised','SYSTEM','Blank workspace');save();location.hash='#/dashboard';render()});
+CHG.importJSON=e=>{const f=e.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);if(!j.audit||!j.docs)throw 0;S=j;audit('Workspace imported','SYSTEM',f.name);save();render();toast('Imported '+f.name)}catch(x){toast('Not a GxP Studio export')}})};
+function vMore(){return {title:'More',html:`<h1 style="margin-bottom:14px">More</h1><div class="card p0 list">${NAV.slice(5).map(([r,i,l])=>`<a class="item" href="#/${r}"><span style="width:26px;text-align:center;font-size:17px">${i}</span><div class="main1"><div class="ttl">${l}</div></div><span class="muted">›</span></a>`).join('')}</div>
+  <div class="card" style="margin-top:14px"><div class="small muted">GxP Studio v${APP_VERSION} · ${esc(S.system.org)}</div></div>`}}
+
+/* ---------- change control & code migrations ---------- */
+const CR_FLOW=['Draft','Assessed','Approved','Implemented','Verified','Closed'];
+const CR_TYPES=['Code Migration','Database Migration','Bug Fix / Patch','Configuration','Infrastructure'];
+const IMPACTS=[['di','Data integrity impact (ALCOA+)'],['validated','Affects validated state — regression required'],['p11','Affects Part 11 controls (audit trail, e-sign, access)'],['sop','Requires SOP / document updates'],['training','Requires user training'],['data','Requires data migration / conversion']];
+const LANG_EXT={javascript:'js',python:'py',sql:'sql',text:'txt'};
+const curCR=()=>S.changes.find(x=>x.id===parseHash().id);
+function vChanges(){const q=UI.crQ.toLowerCase();const list=S.changes.filter(c=>(UI.crF==='All'||(UI.crF==='Open'?openCR(c):!openCR(c)))&&(!q||(c.id+' '+c.title+' '+c.type).toLowerCase().includes(q)));
+  return {title:'Change Control',fab:'crNew',html:`<div class="ph"><div class="t"><h1>Change control &amp; migrations</h1><p>Code, database and infrastructure changes — impact/risk assessment, QA approval, rule-based migration workbench, regression evidence.</p></div><button class="btn pri hide-m" data-act="crNew">+ New change</button></div>
+  <div class="toolbar"><input class="search" data-inp="crQ" placeholder="Search changes…" value="${esc(UI.crQ)}">${seg('crF',['Open','Closed','All'])}</div>
+  <div class="card p0 list">${list.map(c=>`<a class="item" href="#/change/${c.id}"><span class="id">${c.id}</span><div class="main1"><div class="ttl">${esc(c.title)}</div><div class="meta"><span>${esc(c.type)}</span><span>${esc(c.lang)}</span><span>Risk ${esc(c.risk)}</span><span>${esc(userName(c.owner))}</span></div></div>${pill(c.status)}</a>`).join('')||'<div class="empty">No changes.</div>'}</div>`}}
+ACT.crNew=()=>{const m=modal('New change request',`<label class="f">Title<input class="inp" id="ncT" placeholder="e.g. Migrate reporting module to Python 3.11"></label>
+  <div class="fields"><label class="f">Change type<select class="inp" id="ncY">${opts(CR_TYPES)}</select></label><label class="f">Language / artefact<select class="inp" id="ncL">${opts([['javascript','JavaScript (executable tests)'],['python','Python'],['sql','SQL'],['text','Other / none']])}</select></label><label class="f">Risk<select class="inp" id="ncR">${opts(['High','Medium','Low'],'Medium')}</select></label></div>
+  <label class="f">Source baseline (JavaScript only)<select class="inp" id="ncB"><option value="">— paste source later —</option>${S.code.filter(c=>c.status==='Baseline').map(c=>`<option value="${c.id}">${c.id} ${esc(c.label)}</option>`).join('')}</select></label>
+  <label class="f">Description<textarea class="inp" id="ncD"></textarea></label><label class="f">Justification<input class="inp" id="ncJ"></label>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="ncGo">Raise change</button>`);
+  $('#ncGo',m).onclick=()=>{const title=val('ncT',m).trim();if(!title){toast('Title required');return}const lang=val('ncL',m);const b=lang==='javascript'?S.code.find(c=>c.id===val('ncB',m)):null;
+    const pack={javascript:'es5-es2015',python:'py2-py3',sql:'oracle-pg'}[lang]||'custom';const id=nextId('CR');
+    S.changes.unshift({id,title,type:val('ncY',m),lang,status:'Draft',requester:S.currentUser,owner:S.currentUser,created:nowISO(),description:val('ncD',m),justification:val('ncJ',m),risk:val('ncR',m),gamp:'5',fromCV:b?b.id:null,toLabel:'',pack,rules:clone(RULE_PACKS[pack].rules),sourceCode:b?b.code:'',targetCode:'',
+      impact:{},impactNotes:'',plan:[{step:'Back up current baseline',done:false},{step:'Implement change',done:false},{step:'Execute regression tests',done:false}],tests:lang==='javascript'?S.tests.filter(t=>t.mode==='auto').map(t=>t.id):[],history:[{at:nowISO(),by:S.currentUser,text:'Raised'}],signatures:[]});
+    audit('Change request raised',id,title);save();closeModal();location.hash='#/change/'+id}};
+function crLastRun(c){const h=sha256(c.targetCode||'');return S.runs.filter(r=>r.cr===c.id&&r.codeHash===h).sort(byAt).at(-1)}
+function vChange(p){const c=S.changes.find(x=>x.id===p.id);if(!c)return {title:'Not found',html:'<div class="empty">Change not found.</div>'};
+  const locked=!openCR(c);const early=['Draft','Assessed'].includes(c.status);
+  let acts='';
+  if(c.status==='Draft')acts=`<button class="btn pri" data-act="crAssess">✍ Complete assessment</button>`;
+  if(c.status==='Assessed')acts=`<button class="btn pri" data-act="crApprove">✍ QA approve</button><button class="btn bad" data-act="crReject">Reject</button>`;
+  if(c.status==='Approved')acts=`<button class="btn pri" data-act="crImplement">Mark implemented</button>`;
+  if(c.status==='Implemented')acts=`<button class="btn pri" data-act="crVerify">✍ Verify</button>`;
+  if(c.status==='Verified')acts=`<button class="btn pri" data-act="crClose">✍ QA close &amp; promote</button>`;
+  const [tab,tb]=tabsBar('cr',[['ov','Overview'],['imp','Impact & risk'],['work','Migration workbench'],['plan',`Plan (${c.plan.filter(x=>x.done).length}/${c.plan.length})`],['ver','Tests & defects'],['sig','Signatures & history']],'ov');
+  let body='';
+  if(tab==='ov')body=`<div class="grid g2"><div class="card"><h2>Summary</h2><dl class="kv"><dt>Type</dt><dd>${esc(c.type)}</dd><dt>Artefact</dt><dd>${esc(c.lang)}</dd><dt>Risk</dt><dd>${pill(c.risk)}</dd><dt>GAMP category</dt><dd>${esc(c.gamp)}</dd><dt>Requester</dt><dd>${esc(userName(c.requester))}</dd><dt>Owner</dt><dd>${esc(userName(c.owner))}</dd><dt>From baseline</dt><dd>${c.fromCV?link(c.fromCV):'—'}</dd><dt>Target</dt><dd>${esc(c.toLabel||'—')}</dd><dt>Raised</dt><dd>${fmtD(c.created)}</dd></dl></div>
+    <div class="card"><h2>Release gates</h2>${readiness(c).map(([k,l])=>`<div class="chk" style="align-items:center">${k?'<span class="res pass">✓</span>':'<span class="res fail">✕</span>'}<span>${esc(l)}</span></div>`).join('')}</div></div>
+    <div class="card"><h2>Description</h2>${early&&!locked?`<textarea class="inp" id="crD">${esc(c.description)}</textarea><label class="f" style="margin-top:10px">Justification<input class="inp" id="crJ" value="${esc(c.justification)}"></label><div class="fields" style="margin-top:10px"><label class="f">Title<input class="inp" id="crT" value="${esc(c.title)}"></label><label class="f">Target version label<input class="inp" id="crL" value="${esc(c.toLabel)}"></label><label class="f">Owner<select class="inp" id="crO">${userOpts(c.owner)}</select></label></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn pri" data-act="crSaveOv">Save</button></div>`:`<p>${esc(c.description)}</p><p class="muted small"><b>Justification:</b> ${esc(c.justification)}</p>`}</div>`;
+  if(tab==='imp')body=`<div class="card"><h2>Impact assessment</h2>${IMPACTS.map(([k,l])=>`<label class="chk"><input type="checkbox" id="im_${k}" ${c.impact[k]?'checked':''} ${early?'':'disabled'}> ${esc(l)}</label>`).join('')}
+    <div class="fields" style="margin-top:12px"><label class="f">Overall risk<select class="inp" id="imR" ${early?'':'disabled'}>${opts(['High','Medium','Low'],c.risk)}</select></label><label class="f">GAMP 5 category<select class="inp" id="imG" ${early?'':'disabled'}>${opts([['1','1 — Infrastructure'],['3','3 — Non-configured'],['4','4 — Configured'],['5','5 — Custom']],c.gamp)}</select></label></div>
+    <label class="f" style="margin-top:12px">Assessment rationale<textarea class="inp" id="imN" ${early?'':'disabled'}>${esc(c.impactNotes)}</textarea></label>
+    ${early?`<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn pri" data-act="crSaveImp">Save assessment</button></div>`:'<div class="small muted" style="margin-top:8px">Assessment locked after QA approval.</div>'}</div>`;
+  if(tab==='work')body=workbench(c,locked,early);
+  if(tab==='plan')body=`<div class="card"><h2>Implementation &amp; rollback plan</h2>${c.plan.map((s,i)=>`<div class="chk" style="align-items:center"><input type="checkbox" data-chg="crStep" data-i="${i}" ${s.done?'checked':''} ${['Approved','Implemented'].includes(c.status)?'':'disabled'}><span style="flex:1;${s.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(s.step)}</span>${early?`<button class="btn sm ghost" data-act="crStepDel" data-i="${i}">✕</button>`:''}</div>`).join('')}
+    ${early?`<div class="row" style="margin-top:10px"><input class="inp" id="psN" placeholder="Add a step…" style="flex:1"><button class="btn" data-act="crStepAdd">Add</button></div>`:''}<div class="small muted" style="margin-top:8px">${early?'Steps can be checked off once QA has approved the change.':''}</div></div>`;
+  if(tab==='ver'){const last=crLastRun(c);const bugs=S.defects.filter(d=>d.cr===c.id);
+    body=`<div class="card"><div class="row"><h2 style="flex:1;margin:0">Regression suite</h2>${c.lang==='javascript'&&!locked?`<button class="btn pri" data-act="crRun" ${c.targetCode?'':'disabled'}>▶ Run on candidate</button>`:''}</div>
+      <div class="small muted" style="margin:4px 0 10px">${c.lang==='javascript'?`Executes linked automated tests against the candidate (sha256 ${short(sha256(c.targetCode||''))}).`:'Non-executable artefact — attach manual verification evidence via test cases.'}</div>
+      ${S.tests.map(t=>{const lr=last&&last.results.find(x=>x.tc===t.id);return `<label class="chk" style="align-items:center"><input type="checkbox" data-chg="crTest" data-id="${t.id}" ${c.tests.includes(t.id)?'checked':''} ${locked?'disabled':''}>${resIcon(lr&&lr.status)}<span style="flex:1"><a href="#/test/${t.id}" class="mono">${t.id}</a> ${esc(t.title)} <span class="muted small">${t.mode}</span></span></label>`}).join('')}
+      ${last?`<div class="small" style="margin-top:8px">Latest run on current candidate: ${link(last.id)} · ${fmtDT(last.at)}</div>`:''}</div>
+      <div class="card"><div class="row"><h2 style="flex:1;margin:0">Linked defects</h2><button class="btn" data-act="bugNew" data-cr="${c.id}">+ Raise defect</button></div><div class="list" style="margin-top:8px">${bugs.map(b=>`<a class="item" href="#/defect/${b.id}" style="padding:10px 0"><span class="id">${b.id}</span><div class="main1"><div class="ttl">${esc(b.title)}</div></div>${pill(b.severity)} ${pill(b.status)}</a>`).join('')||'<div class="muted small">None.</div>'}</div></div>`}
+  if(tab==='sig')body=`<div class="grid g2"><div class="card"><h2>Signatures</h2>${sigsHTML(c)}</div><div class="card"><h2>History</h2>${histHTML(c.history)}</div></div>`;
+  return {title:c.id,back:'#/changes',html:`<div class="ph"><div class="t"><div class="row"><span class="mono muted">${c.id}</span>${pill(c.status)}<span class="pill brand">${esc(c.type)}</span>${pill('Risk '+c.risk,statusTone(c.risk))}</div><h1 style="margin-top:6px">${esc(c.title)}</h1>${stepper(CR_FLOW,c.status==='Rejected'?'Draft':c.status)}</div></div>
+    <div class="row" style="margin-bottom:12px">${acts}<span style="flex:1"></span><button class="btn" data-act="crDoc">▤ Generate change record</button></div>${tb}${body}`}}
+function workbench(c,locked,early){
+  const pk=RULE_PACKS[c.pack]||RULE_PACKS.custom;const res=applyRules(c.sourceCode,c.rules);const preview=early||!c.targetCode;
+  const tgt=preview?res.out:c.targetCode;const df=diffHTML(c.sourceCode,tgt);const canSrc=!locked&&!['Implemented','Verified'].includes(c.status);const canTgt=['Approved','Implemented','Verified'].includes(c.status);
+  return `${early?`<div class="card" style="border-color:var(--warn);background:var(--warnSoft)"><b>Preview mode.</b> <span class="small">Per SOP-QA-007 implementation is locked until QA approval — rules run as a dry-run preview and nothing is written to the target.</span></div>`:''}
+  <div class="grid g2"><div class="card"><div class="row"><h2 style="flex:1;margin:0">Rule pack</h2><select class="inp" style="width:auto" data-chg="crPack" ${canSrc?'':'disabled'}>${Object.entries(RULE_PACKS).map(([k,v])=>`<option value="${k}" ${k===c.pack?'selected':''}>${esc(v.name)}</option>`).join('')}</select></div>
+    <div class="small muted" style="margin:6px 0 8px">${c.rules.length} rules · ${res.counts.reduce((a,b)=>a+b,0)} matches in source${res.errors.length?` · <span class="err">${esc(res.errors.join('; '))}</span>`:''}</div>
+    ${c.rules.map((r,i)=>`<div class="chk" style="align-items:center"><input type="checkbox" data-chg="crRule" data-i="${i}" ${r.off?'':'checked'} ${canSrc?'':'disabled'}><div style="flex:1;min-width:0"><div class="small b">${esc(r.desc||'Rule '+(i+1))}</div><div class="mono muted" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">/${esc(r.find)}/${esc(r.flags||'')} → ${esc(r.replace)}</div></div><span class="pill ${res.counts[i]?'brand':''}">${res.counts[i]}</span>${canSrc?`<button class="btn sm ghost" data-act="crRuleDel" data-i="${i}">✕</button>`:''}</div>`).join('')||'<div class="muted small">No rules — add custom find/replace rules below.</div>'}
+    ${canSrc?`<details style="margin-top:10px"><summary class="small b" style="cursor:pointer">+ Add custom rule (regex)</summary><div class="fields" style="margin-top:8px"><label class="f">Find (regex)<input class="inp mono" id="rfF"></label><label class="f">Replace<input class="inp mono" id="rfR"></label><label class="f">Flags<input class="inp mono" id="rfG" value="g"></label><label class="f">Description<input class="inp" id="rfD"></label></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" data-act="crRuleAdd">Add rule</button></div></details>`:''}
+    ${!early&&canTgt&&!locked?`<div class="row" style="margin-top:12px"><button class="btn pri" data-act="crApply" style="flex:1">⇄ Apply rules → write target</button></div>`:''}</div>
+  <div class="card"><h2>Source ${c.fromCV?`<span class="muted small">(${c.fromCV})</span>`:''}</h2><textarea class="inp code" id="wbS" ${canSrc?'':'readonly'}>${esc(c.sourceCode)}</textarea>
+    ${canSrc?`<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" data-act="crSaveSrc">Save source</button></div>`:''}</div></div>
+  <div class="card"><div class="row"><h2 style="flex:1;margin:0">${preview?'Preview diff':'Target'} · <span style="color:var(--ok)">+${df.add}</span> <span style="color:var(--bad)">−${df.del}</span></h2>${c.targetCode?blobLink(c.targetCode,`${c.id}_${c.toLabel||'target'}.${LANG_EXT[c.lang]||'txt'}`,'text/plain','⬇ Target','btn sm'):''}</div>
+    <div class="hashv" style="margin:4px 0 10px">${c.targetCode?'target sha256 '+sha256(c.targetCode):'no target written yet'}</div>
+    <div class="tabs" style="margin-bottom:10px"><button class="${UI.wbView!=='edit'?'on':''}" data-act="set" data-k="wbView" data-v="diff">Diff</button>${canTgt&&!locked&&c.targetCode?`<button class="${UI.wbView==='edit'?'on':''}" data-act="set" data-k="wbView" data-v="edit">Edit target (manual changes)</button>`:''}</div>
+    ${UI.wbView==='edit'&&canTgt&&!locked&&c.targetCode?`<textarea class="inp code" id="wbT" style="min-height:380px">${esc(c.targetCode)}</textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn pri" data-act="crSaveTgt">Save target</button></div>`:df.html}
+    ${c.lang==='javascript'&&c.targetCode&&!locked?`<div class="row" style="margin-top:12px"><button class="btn pri" data-act="crRun">▶ Run regression on target</button><span class="small muted">${(()=>{const l=crLastRun(c);return l?`Last run ${l.id}: ${l.results.filter(x=>x.status==='Pass').length}/${l.results.length} pass`:'Not yet run on this version'})()}</span></div>`:''}</div>`}
+function syncWB(c){const s=$('#wbS');if(s&&!s.readOnly&&s.value!==c.sourceCode){c.sourceCode=s.value;audit('Source modified',c.id,'sha256 '+short(sha256(c.sourceCode)))}}
+ACT.crSaveOv=()=>{const c=curCR();Object.assign(c,{description:val('crD'),justification:val('crJ'),title:val('crT').trim()||c.title,toLabel:val('crL').trim(),owner:val('crO')});hist(c,'Details edited');audit('Change modified',c.id,'Overview');save();render();toast('Saved')};
+ACT.crSaveImp=()=>{const c=curCR();IMPACTS.forEach(([k])=>c.impact[k]=val('im_'+k));c.risk=val('imR');c.gamp=val('imG');c.impactNotes=val('imN');hist(c,'Assessment updated');audit('Impact assessment updated',c.id,`Risk ${c.risk}, GAMP ${c.gamp}`);save();render();toast('Assessment saved')};
+ACT.crAssess=()=>{const c=curCR();if(!guard(c.impactNotes&&c.impactNotes.trim(),'Complete the Impact & risk tab (rationale required) first.')){UI.tabs.cr='imp';render();return}
+  esign({record:c,meanings:['Assessed'],title:'Sign impact & risk assessment',onSign:()=>{c.status='Assessed';hist(c,'Assessed');audit('Status → Assessed',c.id,'Risk '+c.risk)}})};
+ACT.crApprove=()=>{const c=curCR();if(!guard(isQA(),'Only QA can approve changes. Switch to Morgan Lee (QA Approver).'))return;if(!guard(c.requester!==S.currentUser,'Requester cannot approve own change.'))return;
+  esign({record:c,meanings:['Approved'],title:'QA approval — change control',onSign:()=>{c.status='Approved';hist(c,'Approved');audit('Status → Approved',c.id,'')}})};
+ACT.crReject=b=>{const c=curCR();if(!guard(isQA(),'Only QA can reject.'))return;armed(b,()=>{c.status='Rejected';hist(c,'Rejected');audit('Status → Rejected',c.id,'');save();render()})};
+ACT.crImplement=()=>{const c=curCR();if(!guard(c.lang==='text'||c.targetCode,'Write the target in the Migration workbench first (Apply rules).'))return;c.status='Implemented';hist(c,'Implemented');audit('Status → Implemented',c.id,c.targetCode?'target sha256 '+short(sha256(c.targetCode)):'');save();render()};
+ACT.crVerify=()=>{const c=curCR();if(!guard(hasRole('Tester')||isQA(),'Verification requires a QA Tester or QA Approver.'))return;
+  if(c.lang==='javascript'&&c.tests.length){const l=crLastRun(c);if(!guard(l,'Run the regression suite on the current candidate first.'))return;if(!guard(l.results.every(x=>x.status==='Pass'),`Regression ${l.id} has failures — fix and re-run before verification.`))return}
+  const ob=S.defects.filter(d=>d.cr===c.id&&openBug(d));if(!guard(!ob.length,`Open linked defects: ${ob.map(d=>d.id).join(', ')}`))return;
+  esign({record:c,meanings:['Verified'],title:'Verification signature',onSign:()=>{c.status='Verified';hist(c,'Verified');audit('Status → Verified',c.id,'')}})};
+ACT.crClose=()=>{const c=curCR();if(!guard(isQA(),'Only QA can close changes.'))return;if(!guard(c.plan.every(p=>p.done),'All plan steps must be complete.'))return;
+  esign({record:c,meanings:['Closed'],title:'QA closure — promote to production baseline',onSign:()=>{c.status='Closed';hist(c,'Closed');audit('Status → Closed',c.id,'');
+    if(c.lang==='javascript'&&c.targetCode){S.code.filter(x=>x.status==='Baseline'&&(x.id===c.fromCV||!c.fromCV)).forEach(x=>{x.status='Retired';audit('Baseline retired',x.id,'Superseded via '+c.id)});const cv={id:nextId('CV'),label:c.toLabel||c.id,title:`LabTrack core module ${c.toLabel||''}`.trim(),lang:'javascript',status:'Baseline',code:c.targetCode,created:nowISO(),by:S.currentUser,cr:c.id};cv.hash=sha256(cv.code);S.code.push(cv);audit('Code baseline registered',cv.id,`${cv.label} sha256 ${short(cv.hash)} via ${c.id}`);setTimeout(()=>toast(`Promoted ${cv.id} as new baseline`),50)}}})};
+CHG.crStep=e=>{const c=curCR();const s=c.plan[+e.dataset.i];s.done=e.checked;audit(s.done?'Plan step completed':'Plan step reopened',c.id,s.step);save();render()};
+ACT.crStepAdd=()=>{const c=curCR();const v=val('psN').trim();if(!v)return;c.plan.push({step:v,done:false});audit('Plan step added',c.id,v);save();render()};
+ACT.crStepDel=b=>{const c=curCR();const [s]=c.plan.splice(+b.dataset.i,1);audit('Plan step removed',c.id,s.step);save();render()};
+CHG.crTest=e=>{const c=curCR();const id=e.dataset.id;c.tests=e.checked?[...new Set([...c.tests,id])]:c.tests.filter(x=>x!==id);audit(e.checked?'Test linked':'Test unlinked',c.id,id);save();render()};
+CHG.crPack=e=>{const c=curCR();syncWB(c);c.pack=e.value;c.rules=clone(RULE_PACKS[e.value].rules);audit('Rule pack selected',c.id,RULE_PACKS[e.value].name);save();render()};
+CHG.crRule=e=>{const c=curCR();syncWB(c);c.rules[+e.dataset.i].off=!e.checked;save();render()};
+ACT.crRuleDel=b=>{const c=curCR();syncWB(c);const [r]=c.rules.splice(+b.dataset.i,1);audit('Migration rule removed',c.id,r.desc||r.find);save();render()};
+ACT.crRuleAdd=()=>{const c=curCR();syncWB(c);const r={find:val('rfF'),replace:val('rfR'),flags:val('rfG')||'g',desc:val('rfD')||'Custom rule'};if(!r.find){toast('Find pattern required');return}try{new RegExp(r.find,r.flags)}catch(e){toast('Invalid regex: '+e.message);return}c.rules.push(r);audit('Migration rule added',c.id,r.desc);save();render()};
+ACT.crSaveSrc=()=>{const c=curCR();const v=val('wbS');if(v===c.sourceCode){toast('No changes');return}c.sourceCode=v;audit('Source modified',c.id,'sha256 '+short(sha256(v)));save();render();toast('Source saved')};
+ACT.crApply=()=>{const c=curCR();syncWB(c);const r=applyRules(c.sourceCode,c.rules);if(r.errors.length){toast(r.errors[0]);return}c.targetCode=r.out;if(!c.toLabel)c.toLabel='candidate';hist(c,`Rules applied (${r.counts.reduce((a,b)=>a+b,0)} replacements)`);audit('Migration rules applied',c.id,`${RULE_PACKS[c.pack]?.name||c.pack} → sha256 ${short(sha256(c.targetCode))}`);if(c.status==='Verified'){c.status='Implemented';hist(c,'Returned to Implemented (target changed)')}save();UI.wbView='diff';render();toast('Target written')};
+ACT.crSaveTgt=()=>{const c=curCR();const v=val('wbT');if(v===c.targetCode){toast('No changes');return}const d=diffLines(c.targetCode,v);c.targetCode=v;hist(c,`Target edited (+${d.add} −${d.del})`);audit('Target code modified',c.id,`+${d.add} −${d.del} lines → sha256 ${short(sha256(v))}`);if(c.status==='Verified'){c.status='Implemented';hist(c,'Returned to Implemented (target changed)')}save();UI.wbView='diff';render();toast('Target saved — re-run regression')};
+ACT.crRun=async b=>{const c=curCR();const tcs=S.tests.filter(t=>c.tests.includes(t.id)&&t.mode==='auto');if(!guard(tcs.length,'Link at least one automated test.'))return;b.disabled=true;b.textContent='Running…';
+  const r=await executeRun(tcs,c.targetCode,c.id,`${c.toLabel||'candidate'} (${c.id})`,c.id);const p=r.results.filter(x=>x.status==='Pass').length;toast(`${r.id}: ${p}/${r.results.length} passed`);render()};
+ACT.crDoc=()=>{const c=curCR();const id=nextId('DOC');const last=crLastRun(c);
+  const content=`# Change Control Record — ${c.id}\n\n| Field | Value |\n|---|---|\n| Title | ${c.title} |\n| Type | ${c.type} |\n| Status | ${c.status} |\n| Risk | ${c.risk} |\n| GAMP category | ${c.gamp} |\n| Requester | ${userName(c.requester)} |\n| From baseline | ${c.fromCV||'—'} |\n| Target | ${c.toLabel||'—'} |\n| Target sha256 | ${c.targetCode?sha256(c.targetCode):'—'} |\n\n## Description\n${c.description}\n\n## Justification\n${c.justification}\n\n## Impact assessment\n`+IMPACTS.map(([k,l])=>`- ${c.impact[k]?'**Yes**':'No'} — ${l}`).join('\n')+`\n\n${c.impactNotes}\n\n## Migration rules applied\n| # | Rule | Pattern |\n|---|---|---|\n`+(c.rules.filter(r=>!r.off).map((r,i)=>`| ${i+1} | ${r.desc} | \`${r.find.replace(/\|/g,'\\u007c')}\` |`).join('\n')||'| — | none | |')+`\n\n## Plan\n`+c.plan.map(s=>`- ${s.done?'[x]':'[ ]'} ${s.step}`).join('\n')+`\n\n## Verification evidence\n`+(last?`Regression ${last.id} (${fmtUTC(last.at)}): ${last.results.filter(x=>x.status==='Pass').length}/${last.results.length} passed. Evidence sha256 ${last.hash}.`:'No regression run on current candidate.')+`\n\n## Linked defects\n`+(S.defects.filter(d=>d.cr===c.id).map(d=>`- ${d.id} ${d.title} — ${d.status}`).join('\n')||'- None')+`\n\n## Signatures\n`+(c.signatures||[]).map(s=>`- ${s.meaning}: ${s.name} (${s.role}) ${fmtUTC(s.at)} — ${s.reason}`).join('\n');
+  S.docs.unshift({id,type:'CCR',title:`Change Control Record ${c.id}`,version:'0.1',status:'Draft',owner:S.currentUser,content,created:nowISO(),updated:nowISO(),history:[{at:nowISO(),by:S.currentUser,text:'Generated from '+c.id}],signatures:[]});audit('Document generated',id,'Change record for '+c.id);save();UI.tabs.doc='view';location.hash='#/doc/'+id};
+
+/* ---------- test execution ---------- */
+async function executeRun(tcs,code,target,label,cr){const {results,engine}=await runSuite(code,tcs);
+  results.forEach(r=>{const t=S.tests.find(x=>x.id===r.tc);r.testVersion=t.version;r.testStatus=t.status});
+  const run={id:nextId('TR'),at:nowISO(),by:S.currentUser,target,codeLabel:label,codeHash:sha256(code),cr:cr||null,engine,results,signatures:[]};run.hash=sha256(JSON.stringify(run.results));S.runs.push(run);
+  audit('Test run executed',run.id,`${results.filter(x=>x.status==='Pass').length}/${results.length} passed on ${label}`);save();return run}
+function vTests(){const [tab,tb]=tabsBar('tests',[['cases',`Test cases (${S.tests.length})`],['runs',`Test runs (${S.runs.length})`]],'cases');
+  const targets=codeTargets().filter(t=>t.lang==='javascript');if(!UI.tcTarget||!targets.find(t=>t.id===UI.tcTarget))UI.tcTarget=(targets.find(t=>/Baseline/.test(t.label))||targets[0]||{}).id||'';
+  let body='';
+  if(tab==='cases'){const q=UI.tcQ.toLowerCase();const list=S.tests.filter(t=>(UI.tcT==='All'||t.type===UI.tcT)&&(!q||(t.id+' '+t.title).toLowerCase().includes(q)));const sel=[...UI.tcSel].filter(id=>S.tests.find(t=>t.id===id&&t.mode==='auto'));
+    body=`<div class="card" style="margin-bottom:12px"><div class="row"><b style="flex:1;min-width:140px">Execute automated suite</b><select class="inp" style="width:auto;max-width:100%" data-chg="tcTarget">${targets.map(t=>`<option value="${t.id}" ${t.id===UI.tcTarget?'selected':''}>${esc(t.label)}</option>`).join('')}</select><button class="btn" data-act="tcSelAll">Select all automated</button><button class="btn pri" data-act="tcRunSel" ${sel.length&&UI.tcTarget?'':'disabled'}>▶ Run ${sel.length||''} &amp; record</button></div><div class="small muted" style="margin-top:6px">Tests run in a sandboxed Web Worker against the selected code version. Results are hash-sealed as GxP evidence.</div></div>
+    <div class="toolbar"><input class="search" data-inp="tcQ" placeholder="Search tests…" value="${esc(UI.tcQ)}">${seg('tcT',['All','IQ','OQ','PQ'])}</div>
+    <div class="card p0 list">${list.map(t=>{const l=latestResult(t.id);return `<div class="item" style="cursor:default">${t.mode==='auto'?`<input type="checkbox" data-chg="tcSel" data-id="${t.id}" ${UI.tcSel.has(t.id)?'checked':''} style="width:18px;height:18px;accent-color:var(--brand)">`:'<span style="width:18px"></span>'}${resIcon(l&&l.status)}<a href="#/test/${t.id}" class="main1" style="color:inherit"><div class="ttl">${esc(t.title)}</div><div class="meta"><span class="mono">${t.id}</span><span>${t.type}</span><span>${t.mode==='auto'?'Automated':'Manual'}</span><span>v${t.version}</span><span>${t.reqs.join(', ')||'no requirements'}</span></div></a>${pill(t.status)}</div>`}).join('')||'<div class="empty">No tests.</div>'}</div>`}
+  else body=`<div class="card p0 list">${S.runs.slice().reverse().map(r=>{const p=r.results.filter(x=>x.status==='Pass').length;return `<a class="item" href="#/run/${r.id}"><span class="id">${r.id}</span><div class="main1"><div class="ttl">${esc(r.codeLabel)}</div><div class="meta"><span>${fmtDT(r.at)}</span><span>${esc(userName(r.by))}</span><span>${r.results.length} test case${r.results.length>1?'s':''}</span>${sigsAt(r,'Reviewed').length?'<span style="color:var(--ok)">✓ reviewed</span>':''}</div></div>${pill(`${p}/${r.results.length} pass`,p===r.results.length?'ok':'bad')}</a>`}).join('')||'<div class="empty">No runs yet.</div>'}</div>`;
+  return {title:'Test Automation',fab:'tcNew',html:`<div class="ph"><div class="t"><h1>Test automation</h1><p>Scripted IQ/OQ/PQ test cases — automated (JavaScript assertions) or manual step-by-step — traced to requirements.</p></div><button class="btn pri hide-m" data-act="tcNew">+ New test case</button></div>${tb}${body}`}}
+CHG.tcTarget=e=>{UI.tcTarget=e.value;render()};
+CHG.tcSel=e=>{e.checked?UI.tcSel.add(e.dataset.id):UI.tcSel.delete(e.dataset.id);render()};
+ACT.tcSelAll=()=>{const auto=S.tests.filter(t=>t.mode==='auto');const all=auto.every(t=>UI.tcSel.has(t.id));auto.forEach(t=>all?UI.tcSel.delete(t.id):UI.tcSel.add(t.id));render()};
+ACT.tcRunSel=async b=>{const tg=codeTargets().find(t=>t.id===UI.tcTarget);const tcs=S.tests.filter(t=>UI.tcSel.has(t.id)&&t.mode==='auto');if(!tg||!tcs.length)return;b.disabled=true;b.textContent='Running…';
+  const isCR=tg.id.startsWith('CR');const lbl=isCR?`${S.changes.find(c=>c.id===tg.id).toLabel||'candidate'} (${tg.id})`:`${S.code.find(c=>c.id===tg.id).label} ${S.code.find(c=>c.id===tg.id).status.toLowerCase()}`;
+  const r=await executeRun(tcs,tg.code,tg.id,lbl,isCR?tg.id:null);location.hash='#/run/'+r.id};
+ACT.tcNew=()=>{const m=modal('New test case',`<label class="f">Title<input class="inp" id="ntT" placeholder="e.g. Dose ceiling for pediatric patients"></label><div class="fields"><label class="f">Type<select class="inp" id="ntY">${opts(['OQ','PQ','IQ','Unit','Regression'])}</select></label><label class="f">Mode<select class="inp" id="ntM">${opts([['auto','Automated (script)'],['manual','Manual (steps)']])}</select></label></div>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="ntGo">Create</button>`);
+  $('#ntGo',m).onclick=()=>{const title=val('ntT',m).trim();if(!title){toast('Title required');return}const id=nextId('TC');const mode=val('ntM',m);
+    S.tests.push({id,title,type:val('ntY',m),reqs:[],mode,script:mode==='auto'?`test('describe the expected behaviour', () => {\n  // sut = exports of the system under test\n  expect(sut.withinSpec(100, 95, 105)).toBe(true);\n});`:'',steps:mode==='manual'?[{action:'',expected:''}]:[],status:'Draft',version:'0.1',author:S.currentUser,created:nowISO()});
+    audit('Test case created',id,title);save();closeModal();location.hash='#/test/'+id}};
+const curTC=()=>S.tests.find(x=>x.id===parseHash().id);
+const API_HELP=`test(name, fn) · expect(x).toBe(y) · .toEqual(obj) · .toBeCloseTo(n, dp) · .toBeTruthy() · .toBeFalsy() · .toBeGreaterThan(n) · .toBeLessThan(n) · .toContain(v) · .toMatch(re) · .toHaveLength(n) · .toThrow(msg) · .not.toBe(y) · console.log() · sut.* = system-under-test exports`;
+function vTest(p){const t=S.tests.find(x=>x.id===p.id);if(!t)return {title:'Not found',html:'<div class="empty">Test not found.</div>'};
+  const runs=S.runs.filter(r=>r.results.some(x=>x.tc===t.id)).slice().reverse();const baseline=S.code.find(c=>c.status==='Baseline');
+  return {title:t.id,back:'#/tests',html:`<div class="ph"><div class="t"><div class="row"><span class="mono muted">${t.id}</span>${pill(t.status)}<span class="pill brand">${t.type}</span><span class="pill">${t.mode==='auto'?'Automated':'Manual'}</span><span class="pill">v${t.version}</span></div><h1 style="margin-top:6px">${esc(t.title)}</h1><p>Author ${esc(userName(t.author))}${t.status==='Approved'?' · editing an approved test returns it to Draft':''}</p></div></div>
+  <div class="row" style="margin-bottom:12px">${t.status==='Draft'?'<button class="btn" data-act="tcApprove">✍ QA approve test</button>':''}${t.mode==='auto'?`<button class="btn" data-act="tcDry">▷ Dry run vs ${esc(baseline?baseline.label:'baseline')} (not recorded)</button>`:`<button class="btn pri" data-act="tcManual">▶ Execute &amp; record</button>`}</div>
+  <div id="dry"></div>
+  <div class="grid g2" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)"><div class="card">
+    <div class="fields"><label class="f">Title<input class="inp" id="tT" value="${esc(t.title)}"></label><label class="f">Type<select class="inp" id="tY">${opts(['IQ','OQ','PQ','Unit','Regression'],t.type)}</select></label></div>
+    ${t.mode==='auto'?`<label class="f" style="margin-top:12px">Automated script<textarea class="inp code" id="tS" style="min-height:340px">${esc(t.script)}</textarea></label><div class="small muted" style="margin-top:6px;font-family:var(--mono);font-size:11px">${esc(API_HELP)}</div>`:
+      `<div class="small b" style="margin-top:14px">Steps</div>${t.steps.map((s,i)=>`<div class="fields" style="margin-top:8px;grid-template-columns:24px 1fr 1fr 34px;align-items:start"><b class="muted" style="padding-top:9px">${i+1}</b><textarea class="inp" style="min-height:60px" data-step="a${i}" placeholder="Action">${esc(s.action)}</textarea><textarea class="inp" style="min-height:60px" data-step="e${i}" placeholder="Expected result">${esc(s.expected)}</textarea><button class="btn sm ghost" data-act="tcStepDel" data-i="${i}">✕</button></div>`).join('')}<button class="btn sm" style="margin-top:8px" data-act="tcStepAdd">+ Step</button>`}
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn pri" data-act="tcSave">Save test case</button></div></div>
+  <div><div class="card"><h2>Requirements covered</h2>${S.reqs.map(r=>`<label class="chk"><input type="checkbox" class="tcReq" value="${r.id}" ${t.reqs.includes(r.id)?'checked':''}><span><span class="mono">${r.id}</span> ${esc(r.text)}</span></label>`).join('')}</div>
+  <div class="card"><h2>Execution history</h2>${runs.map(r=>{const x=r.results.find(z=>z.tc===t.id);return `<a class="item" href="#/run/${r.id}" style="padding:8px 0">${resIcon(x.status)}<div class="main1"><div class="ttl small">${r.id} · ${esc(r.codeLabel)}</div><div class="meta">${fmtDT(r.at)} · v${x.testVersion||'?'}</div></div></a>`}).join('')||'<div class="muted small">Never executed.</div>'}</div>
+  <div class="card"><h2>Signatures</h2>${sigsHTML(t)}</div></div></div>`}}
+function readSteps(t){t.steps.forEach((s,i)=>{const a=$(`[data-step="a${i}"]`),e=$(`[data-step="e${i}"]`);if(a)s.action=a.value;if(e)s.expected=e.value})}
+ACT.tcStepAdd=()=>{const t=curTC();readSteps(t);t.steps.push({action:'',expected:''});render()};
+ACT.tcStepDel=b=>{const t=curTC();readSteps(t);t.steps.splice(+b.dataset.i,1);render()};
+ACT.tcSave=()=>{const t=curTC();const before=JSON.stringify([t.title,t.type,t.script,t.steps,t.reqs]);t.title=val('tT').trim()||t.title;t.type=val('tY');if(t.mode==='auto')t.script=val('tS');else readSteps(t);t.reqs=$$('.tcReq').filter(x=>x.checked).map(x=>x.value);
+  if(JSON.stringify([t.title,t.type,t.script,t.steps,t.reqs])===before){toast('No changes');return}
+  const [M,m]=t.version.split('.').map(Number);t.version=`${M}.${(m||0)+1}`;if(t.status==='Approved'){t.status='Draft';toast('Saved v'+t.version+' — returned to Draft, re-approval required')}else toast('Saved v'+t.version);audit('Test case modified',t.id,'v'+t.version);save();render()};
+ACT.tcApprove=()=>{const t=curTC();if(!guard(isQA(),'Only QA can approve test cases. Switch to Morgan Lee.'))return;if(!guard(t.author!==S.currentUser,'Author cannot approve own test.'))return;
+  esign({record:t,meanings:['Approved for execution'],title:'Approve test case',onSign:()=>{const [M,m]=t.version.split('.').map(Number);if(m||!M)t.version=`${M+1}.0`;t.status='Approved';audit('Test case approved',t.id,'v'+t.version)}})};
+ACT.tcDry=async b=>{const t=curTC();const s=val('tS');const base=S.code.find(c=>c.status==='Baseline');if(!base){toast('No baseline code');return}b.disabled=true;const {results,engine}=await runSuite(base.code,[{id:t.id,script:s}]);b.disabled=false;$('#dry').innerHTML=consoleHTML(results,`Dry run · ${base.label} · ${engine} · NOT RECORDED`)};
+function consoleHTML(results,head){return `<div class="console" style="margin-bottom:14px"><span class="h">${esc(head)}</span>\n`+results.map(r=>`\n<span class="h">${esc(r.tc)}</span> ${r.status==='Pass'?'<span class="p">PASS</span>':`<span class="f">${r.status.toUpperCase()}</span>`} <span class="d">${r.ms} ms</span>\n`+r.cases.map(c=>`  ${c.status==='Pass'?'<span class="p">✓</span>':'<span class="f">✕</span>'} ${esc(c.name)}${c.msg?`\n      <span class="f">${esc(c.msg)}</span>`:''}`).join('\n')+(r.logs&&r.logs.length?'\n'+r.logs.map(l=>`  <span class="d">› ${esc(l)}</span>`).join('\n'):'')).join('\n')+'</div>'}
+ACT.tcManual=()=>{const t=curTC();const m=modal(`Execute ${t.id} — ${t.title}`,`<div class="small muted">Record contemporaneous actual results for each step (ALCOA+). Executed as ${esc(me().name)}.</div>`+t.steps.map((s,i)=>`<div class="card flat" style="padding:12px"><div class="small b">Step ${i+1}: ${esc(s.action)}</div><div class="small muted">Expected: ${esc(s.expected)}</div><textarea class="inp" style="min-height:54px;margin-top:8px" id="mx${i}" placeholder="Actual result"></textarea><div class="seg" style="margin-top:8px"><label style="padding:4px 10px"><input type="radio" name="mr${i}" value="Pass" checked> Pass</label><label style="padding:4px 10px"><input type="radio" name="mr${i}" value="Fail"> Fail</label></div></div>`).join(''),`<button class="btn" data-x>Cancel</button><button class="btn pri" id="mxGo">Record execution</button>`,true);
+  $('#mxGo',m).onclick=()=>{const cases=t.steps.map((s,i)=>({name:s.action,status:m.querySelector(`input[name=mr${i}]:checked`).value,msg:`Expected: ${s.expected} | Actual: ${val('mx'+i,m)}`,actual:val('mx'+i,m)}));if(cases.some(c=>!c.actual.trim())){toast('Enter an actual result for every step');return}
+    const st=cases.some(c=>c.status==='Fail')?'Fail':'Pass';const run={id:nextId('TR'),at:nowISO(),by:S.currentUser,target:'MANUAL',codeLabel:`Manual execution — ${S.system.name} validation env`,codeHash:null,cr:null,engine:'manual',results:[{tc:t.id,status:st,ms:0,cases,logs:[],testVersion:t.version,testStatus:t.status}],signatures:[]};run.hash=sha256(JSON.stringify(run.results));S.runs.push(run);
+    audit('Manual test executed',run.id,`${t.id} ${st}`);save();closeModal();location.hash='#/run/'+run.id}};
+function vRun(p){const r=S.runs.find(x=>x.id===p.id);if(!r)return {title:'Not found',html:'<div class="empty">Run not found.</div>'};
+  const pass=r.results.filter(x=>x.status==='Pass').length;const intact=sha256(JSON.stringify(r.results))===r.hash;const evidence=JSON.stringify({run:r,exported:nowISO(),app:'GxP Studio '+APP_VERSION},null,2);
+  return {title:r.id,back:'#/tests',html:`<div class="ph"><div class="t"><div class="row"><span class="mono muted">${r.id}</span>${pill(`${pass}/${r.results.length} pass`,pass===r.results.length?'ok':'bad')}${sigsAt(r,'Reviewed').length?pill('Reviewed','ok'):pill('Awaiting review','warn')}</div><h1 style="margin-top:6px">${esc(r.codeLabel)}</h1><p>Executed ${fmtUTC(r.at)} by ${esc(userName(r.by))} · ${esc(r.engine)}</p></div></div>
+  <div class="row" style="margin-bottom:12px"><button class="btn pri" data-act="runSign">✍ Review &amp; sign</button><button class="btn" data-act="runTSR">▤ Generate test summary report</button>${blobLink(evidence,`${r.id}_evidence.json`,'application/json','⬇ Evidence')}</div>
+  <div class="grid g2"><div class="card"><dl class="kv"><dt>Target</dt><dd>${r.target==='MANUAL'?'Manual':link(r.target)}</dd><dt>Code sha256</dt><dd class="hashv">${r.codeHash||'n/a (manual)'}</dd><dt>Change</dt><dd>${r.cr?link(r.cr):'—'}</dd><dt>Evidence sha256</dt><dd class="hashv">${r.hash}</dd><dt>Integrity</dt><dd>${intact?pill('Evidence unaltered','ok'):pill('TAMPERED','bad')}</dd></dl></div><div class="card"><h2>Review</h2>${sigsHTML(r)}</div></div>
+  <div class="card p0" style="margin-top:14px">${r.results.map(x=>{const t=S.tests.find(z=>z.id===x.tc)||{title:'(deleted)'};const bug=S.defects.find(d=>d.run===r.id&&d.tc===x.tc);return `<div style="padding:14px 16px;border-bottom:1px solid var(--line)"><div class="row">${resIcon(x.status)}<a href="#/test/${x.tc}" class="mono">${x.tc}</a><b style="flex:1">${esc(t.title)}</b><span class="small muted">${x.ms} ms · v${x.testVersion||'?'}${x.testStatus==='Draft'?' (draft script)':''}</span>${x.status!=='Pass'?(bug?link(bug.id):`<button class="btn sm bad" data-act="runBug" data-tc="${x.tc}">+ Raise defect</button>`):''}</div>
+    <div style="margin:6px 0 0 30px">${x.cases.map(c=>`<div class="small" style="padding:2px 0">${c.status==='Pass'?'<span style="color:var(--ok)">✓</span>':'<span style="color:var(--bad)">✕</span>'} ${esc(c.name)}${c.msg?`<div class="mono" style="color:${c.status==='Pass'?'var(--muted)':'var(--bad)'};font-size:11.5px;margin-left:16px">${esc(c.msg)}</div>`:''}</div>`).join('')}</div></div>`}).join('')}</div>
+  <h2 style="margin:18px 0 10px">Console</h2>${consoleHTML(r.results,`${r.id} · ${r.codeLabel} · ${r.engine}`)}`}}
+const curRun=()=>S.runs.find(x=>x.id===parseHash().id);
+ACT.runSign=()=>{const r=curRun();if(!guard(r.by!==S.currentUser,'Independent review: the executor cannot review their own run. Switch user.'))return;esign({record:Object.assign(r,{title:r.codeLabel}),meanings:['Reviewed'],title:'Review test evidence'})};
+ACT.runBug=b=>{const r=curRun();const x=r.results.find(z=>z.tc===b.dataset.tc);const t=S.tests.find(z=>z.id===x.tc);const f=x.cases.filter(c=>c.status!=='Pass');
+  bugModal({title:`${t.title}: ${f[0]?f[0].name:'failure'} (${r.codeLabel})`,severity:'Major',gxp:'High',tc:x.tc,run:r.id,cr:r.cr||'',found:'Test execution',description:`Failure in ${r.id} (${t.id} v${x.testVersion}).\n`+f.map(c=>`- ${c.name}: ${c.msg}`).join('\n'),actual:f.map(c=>c.msg).join('; ')})};
+ACT.runTSR=()=>{const r=curRun();const id=nextId('DOC');const pass=r.results.filter(x=>x.status==='Pass').length;
+  const content=`# Test Summary Report — ${r.id}\n\n| Field | Value |\n|---|---|\n| System | ${S.system.name} |\n| Target | ${r.codeLabel} |\n| Code sha256 | ${r.codeHash||'n/a'} |\n| Executed by | ${userName(r.by)} |\n| Executed at | ${fmtUTC(r.at)} |\n| Engine | ${r.engine} |\n| Evidence sha256 | ${r.hash} |\n\n## Results\n${pass} of ${r.results.length} test cases passed.\n\n| Test case | Title | Requirements | Result | Cases |\n|---|---|---|---|---|\n`+r.results.map(x=>{const t=S.tests.find(z=>z.id===x.tc)||{title:'',reqs:[]};return `| ${x.tc} | ${t.title} | ${t.reqs.join(', ')||'—'} | **${x.status}** | ${x.cases.filter(c=>c.status==='Pass').length}/${x.cases.length} |`}).join('\n')+`\n\n## Deviations\n`+(r.results.filter(x=>x.status!=='Pass').map(x=>{const b=S.defects.find(d=>d.run===r.id&&d.tc===x.tc);return `- ${x.tc}: ${x.cases.filter(c=>c.status!=='Pass').map(c=>c.msg).join('; ')} → ${b?b.id:'defect not yet raised'}`}).join('\n')||'- None')+`\n\n## Conclusion\n${pass===r.results.length?'All test cases met their acceptance criteria.':'Acceptance criteria NOT met. Release is blocked pending defect resolution and re-execution.'}`;
+  S.docs.unshift({id,type:'TSR',title:`Test Summary Report ${r.id}`,version:'0.1',status:'Draft',owner:S.currentUser,content,created:nowISO(),updated:nowISO(),history:[{at:nowISO(),by:S.currentUser,text:'Generated from '+r.id}],signatures:[]});audit('Document generated',id,'TSR for '+r.id);save();UI.tabs.doc='view';location.hash='#/doc/'+id};
+
+/* ---------- defects & CAPA ---------- */
+const BUG_FLOW=['Open','Investigating','Fix In Progress','Ready for Verification','Verified','Closed'];
+const RC_CATS=['Requirements','Design','Code','Configuration','Data','Test script','Procedure / human error','Vendor / third party','Infrastructure'];
+function vDefects(){const q=UI.bugQ.toLowerCase();const list=S.defects.filter(d=>(UI.bugF==='All'||(UI.bugF==='Open'?openBug(d):!openBug(d)))&&(!q||(d.id+' '+d.title).toLowerCase().includes(q)));
+  return {title:'Defects & CAPA',fab:'bugNew',html:`<div class="ph"><div class="t"><h1>Defects, deviations &amp; CAPA</h1><p>Bug fixes with root-cause analysis, corrective/preventive actions and verification evidence.</p></div><button class="btn pri hide-m" data-act="bugNew">+ Raise defect</button></div>
+  <div class="toolbar"><input class="search" data-inp="bugQ" placeholder="Search defects…" value="${esc(UI.bugQ)}">${seg('bugF',['Open','Closed','All'])}</div>
+  <div class="card p0 list">${list.map(d=>`<a class="item" href="#/defect/${d.id}"><span class="id">${d.id}</span><div class="main1"><div class="ttl">${esc(d.title)}</div><div class="meta"><span>GxP ${d.gxp}</span><span>${esc(userName(d.assignee))}</span>${d.cr?`<span class="mono">${d.cr}</span>`:''}${d.tc?`<span class="mono">${d.tc}</span>`:''}<span>${ago(d.created)}</span></div></div>${pill(d.severity)}${pill(d.status)}</a>`).join('')||'<div class="empty">No defects.</div>'}</div>`}}
+function bugModal(pre){pre=pre||{};const m=modal('Raise defect / deviation',`<label class="f">Title<input class="inp" id="nbT" value="${esc(pre.title||'')}"></label>
+  <div class="fields"><label class="f">Severity<select class="inp" id="nbS">${opts(['Critical','Major','Minor'],pre.severity||'Major')}</select></label><label class="f">GxP impact<select class="inp" id="nbG">${opts(['High','Medium','Low'],pre.gxp||'Medium')}</select></label><label class="f">Assignee<select class="inp" id="nbA">${userOpts('u1')}</select></label></div>
+  <div class="fields"><label class="f">Test case<select class="inp" id="nbC"><option value="">—</option>${S.tests.map(t=>`<option value="${t.id}" ${t.id===pre.tc?'selected':''}>${t.id} ${esc(t.title)}</option>`).join('')}</select></label><label class="f">Change control<select class="inp" id="nbR"><option value="">—</option>${S.changes.map(c=>`<option value="${c.id}" ${c.id===pre.cr?'selected':''}>${c.id} ${esc(c.title)}</option>`).join('')}</select></label></div>
+  <label class="f">Description<textarea class="inp" id="nbD">${esc(pre.description||'')}</textarea></label><div class="fields"><label class="f">Expected<input class="inp" id="nbE" value="${esc(pre.expected||'')}"></label><label class="f">Actual<input class="inp" id="nbX" value="${esc(pre.actual||'')}"></label></div>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="nbGo">Raise</button>`);
+  $('#nbGo',m).onclick=()=>{const title=val('nbT',m).trim();if(!title){toast('Title required');return}const id=nextId('BUG');
+    S.defects.unshift({id,title,severity:val('nbS',m),gxp:val('nbG',m),status:'Open',reporter:S.currentUser,assignee:val('nbA',m),created:nowISO(),found:pre.found||'Manual report',run:pre.run||null,tc:val('nbC',m)||null,cr:val('nbR',m)||null,description:val('nbD',m),steps:'',expected:val('nbE',m),actual:val('nbX',m),rcCategory:'',rootCause:'',fix:'',capa:{corrective:'',preventive:'',effectiveness:''},history:[{at:nowISO(),by:S.currentUser,text:'Raised'+(pre.run?' from '+pre.run:'')}],signatures:[]});
+    audit('Defect raised',id,title);save();closeModal();location.hash='#/defect/'+id}}
+ACT.bugNew=b=>bugModal(b&&b.dataset&&b.dataset.cr?{cr:b.dataset.cr}:{});
+const curBug=()=>S.defects.find(x=>x.id===parseHash().id);
+function vDefect(p){const d=S.defects.find(x=>x.id===p.id);if(!d)return {title:'Not found',html:'<div class="empty">Defect not found.</div>'};
+  const lock=d.status==='Closed';const i=BUG_FLOW.indexOf(d.status);const next=BUG_FLOW[i+1];const ro=lock?'disabled':'';
+  const tr=d.tc?latestResult(d.tc,r=>r.at>=d.created):null;
+  return {title:d.id,back:'#/defects',html:`<div class="ph"><div class="t"><div class="row"><span class="mono muted">${d.id}</span>${pill(d.status)}${pill(d.severity)}${pill('GxP '+d.gxp,statusTone(d.gxp))}</div><h1 style="margin-top:6px">${esc(d.title)}</h1><p>Reported by ${esc(userName(d.reporter))} · ${fmtD(d.created)} · ${esc(d.found)}</p>${stepper(BUG_FLOW,d.status)}</div></div>
+  <div class="row" style="margin-bottom:12px">${next?`<button class="btn pri" data-act="bugAdv">${['Verified','Closed'].includes(next)?'✍ ':''}Move to ${esc(next)}</button>`:''}${!lock?'<button class="btn" data-act="bugSave">Save changes</button>':''}</div>
+  <div class="grid g2"><div class="card"><h2>Details</h2>
+    <label class="f">Title<input class="inp" id="bT" value="${esc(d.title)}" ${ro}></label>
+    <div class="fields" style="margin-top:10px"><label class="f">Severity<select class="inp" id="bS" ${ro}>${opts(['Critical','Major','Minor'],d.severity)}</select></label><label class="f">GxP impact<select class="inp" id="bG" ${ro}>${opts(['High','Medium','Low'],d.gxp)}</select></label><label class="f">Assignee<select class="inp" id="bA" ${ro}>${userOpts(d.assignee)}</select></label></div>
+    <label class="f" style="margin-top:10px">Description<textarea class="inp" id="bD" ${ro}>${esc(d.description)}</textarea></label>
+    <div class="fields" style="margin-top:10px"><label class="f">Expected<input class="inp" id="bE" value="${esc(d.expected)}" ${ro}></label><label class="f">Actual<input class="inp" id="bX" value="${esc(d.actual)}" ${ro}></label></div>
+    <div class="fields" style="margin-top:10px"><label class="f">Test case<select class="inp" id="bC" ${ro}><option value="">—</option>${S.tests.map(t=>`<option value="${t.id}" ${t.id===d.tc?'selected':''}>${t.id} ${esc(t.title)}</option>`).join('')}</select></label><label class="f">Change control<select class="inp" id="bR" ${ro}><option value="">—</option>${S.changes.map(c=>`<option value="${c.id}" ${c.id===d.cr?'selected':''}>${c.id}</option>`).join('')}</select></label></div>
+    <div class="small" style="margin-top:10px">${d.run?`Found in ${link(d.run)}`:''} ${d.tc?` · Latest ${link(d.tc)} result since raised: ${tr?`${resIcon(tr.status)} ${link(tr.run.id)}`:'<span class="muted">not re-run yet</span>'}`:''}</div></div>
+  <div><div class="card"><h2>Root cause analysis</h2><label class="f">Root cause category<select class="inp" id="bK" ${ro}><option value="">— select —</option>${opts(RC_CATS,d.rcCategory)}</select></label>
+    <label class="f" style="margin-top:10px">Root cause (5 whys)<textarea class="inp" id="bRC" ${ro} placeholder="Why 1… Why 2… Why 3…">${esc(d.rootCause)}</textarea></label>
+    <label class="f" style="margin-top:10px">Fix description (bug fix)<textarea class="inp" id="bF" ${ro} placeholder="What was changed and where (link the change control)">${esc(d.fix)}</textarea></label>
+    ${d.cr&&!lock?`<div class="small" style="margin-top:8px">Apply the code fix in ${link(d.cr)} → Migration workbench → Edit target, then re-run regression.</div>`:''}</div>
+  <div class="card"><h2>CAPA</h2><label class="f">Corrective action<textarea class="inp" id="bCA" ${ro}>${esc(d.capa.corrective)}</textarea></label><label class="f" style="margin-top:10px">Preventive action<textarea class="inp" id="bPA" ${ro}>${esc(d.capa.preventive)}</textarea></label><label class="f" style="margin-top:10px">Effectiveness check<textarea class="inp" id="bEC" ${ro}>${esc(d.capa.effectiveness)}</textarea></label></div></div></div>
+  <div class="grid g2" style="margin-top:14px"><div class="card"><h2>Signatures</h2>${sigsHTML(d)}</div><div class="card"><h2>History</h2>${histHTML(d.history)}</div></div>`}}
+function readBug(d){if(!$('#bT'))return false;const b=JSON.stringify(d);Object.assign(d,{title:val('bT').trim()||d.title,severity:val('bS'),gxp:val('bG'),assignee:val('bA'),description:val('bD'),expected:val('bE'),actual:val('bX'),tc:val('bC')||null,cr:val('bR')||null,rcCategory:val('bK'),rootCause:val('bRC'),fix:val('bF')});Object.assign(d.capa,{corrective:val('bCA'),preventive:val('bPA'),effectiveness:val('bEC')});return JSON.stringify(d)!==b}
+ACT.bugSave=()=>{const d=curBug();if(readBug(d)){hist(d,'Edited');audit('Defect modified',d.id,'');save();render();toast('Saved')}else toast('No changes')};
+ACT.bugAdv=()=>{const d=curBug();if(d.status!=='Closed'&&readBug(d)){hist(d,'Edited');audit('Defect modified',d.id,'')}const next=BUG_FLOW[BUG_FLOW.indexOf(d.status)+1];
+  const go=()=>{d.status=next;hist(d,next);audit('Status → '+next,d.id,'');save();render()};
+  if(next==='Fix In Progress'&&!guard(d.rcCategory&&d.rootCause.trim(),'Document the root cause category and analysis first.')){save();render();return}
+  if(next==='Ready for Verification'&&!guard(d.fix.trim(),'Describe the fix first.')){save();render();return}
+  if(next==='Verified'){if(!guard(hasRole('Tester')||isQA(),'Verification requires a QA Tester or QA Approver. Switch user.'))return;
+    const t=d.tc&&S.tests.find(x=>x.id===d.tc);if(t&&t.mode==='auto'){const l=latestResult(t.id,r=>r.at>=d.created);if(!guard(l&&l.status==='Pass',`${t.id} must pass in a recorded run after the defect was raised.`))return}
+    esign({record:d,meanings:['Verified — fix effective'],title:'Verify defect fix',onSign:()=>{d.status='Verified';hist(d,'Verified');audit('Status → Verified',d.id,'')}});return}
+  if(next==='Closed'){if(!guard(isQA(),'Only QA can close defects.'))return;if(d.gxp!=='Low'&&!guard(d.capa.corrective.trim()&&d.capa.preventive.trim(),'GxP-impacting defects require corrective and preventive actions.'))return;
+    esign({record:d,meanings:['Closed'],title:'QA closure',onSign:()=>{d.status='Closed';hist(d,'Closed');audit('Status → Closed',d.id,'')}});return}
+  go()};
+
+/* ---------- shell, router, events ---------- */
+function applyTheme(){const r=document.documentElement;r.classList.remove('light','dark');if(S.theme==='light')r.classList.add('light');if(S.theme==='dark')r.classList.add('dark');$('meta[name=theme-color]')?.setAttribute('content',r.classList.contains('dark')||(!r.classList.contains('light')&&matchMedia('(prefers-color-scheme: dark)').matches)?'#0d1020':'#4f46e5')}
+function parseHash(){const h=location.hash.replace(/^#\/?/,'')||'dashboard';const [path,q]=h.split('?');const [r,id]=path.split('/');return {r,id:id?decodeURIComponent(id):null,q:new URLSearchParams(q||'')}}
+const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
+let lastRoute='';
+function render(){const p=parseHash();const fn=VIEWS[p.r]||vDashboard;let v;
+  try{v=fn(p)}catch(e){console.error(e);v={title:'Error',html:`<div class="card"><b>Something went wrong rendering this view.</b><pre class="codebox">${esc(e.stack||e)}</pre></div>`}}
+  const sec=SECTION[p.r]||p.r;const cnt={docs:S.docs.filter(d=>d.status==='In Review').length,changes:S.changes.filter(openCR).length,defects:S.defects.filter(openBug).length};
+  $('#nav').innerHTML=NAV.map(([r,i,l],k)=>`${k===5?'<div class="sec">Quality system</div>':k===0?'<div class="sec">Workspace</div>':''}<a href="#/${r}" class="${sec===r?'on':''}"><span class="ic">${i}</span>${l}${cnt[r]?`<span class="cnt">${cnt[r]}</span>`:''}</a>`).join('');
+  const moreOn=['trace','code','audit','settings','more'].includes(sec);
+  $('#tabbar').innerHTML=NAV.slice(0,5).map(([r,i,l,s])=>`<a href="#/${r}" class="${sec===r?'on':''}"><span class="ic">${i}</span>${s}</a>`).join('')+`<a href="#/more" class="${moreOn?'on':''}"><span class="ic">⋯</span>More</a>`;
+  $('#crumb').innerHTML=(v.back?`<a href="${v.back}" class="btn ghost sm" style="margin-right:4px">‹</a>`:'')+esc(v.title||'');
+  $('#user').innerHTML=`${avatar(S.currentUser)}<select data-chg="user" aria-label="Active user">${S.users.map(u=>`<option value="${u.id}" ${u.id===S.currentUser?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`;
+  $('#roleTag').textContent=me().role;
+  const keep=location.hash===lastRoute?window.scrollY:0;
+  $('#view').innerHTML=v.html;
+  const fab=$('#fab');fab.style.display=v.fab?'':'none';fab.dataset.act=v.fab||'';
+  window.scrollTo(0,keep);lastRoute=location.hash;
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-goto]');if(g){e.preventDefault();const id=g.dataset.goto;if(findAny(id)||id.startsWith('REQ'))location.hash=routeFor(id);else toast(id+' not found');return}
+  const a=e.target.closest('[data-act]');if(a&&a.dataset.act&&ACT[a.dataset.act]){e.preventDefault();try{ACT[a.dataset.act](a,e)}catch(err){console.error(err);toast('Error: '+err.message)}}});
+document.addEventListener('change',e=>{const a=e.target.closest('[data-chg]');if(a&&CHG[a.dataset.chg])CHG[a.dataset.chg](a,e)});
+document.addEventListener('input',e=>{const a=e.target.closest('[data-inp]');if(!a)return;const k=a.dataset.inp;UI[k]=a.value;const pos=a.selectionStart;render();const n=$(`[data-inp="${k}"]`);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(x){}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.key==='Tab'&&e.target.matches('textarea.code')){e.preventDefault();const t=e.target,s=t.selectionStart;t.setRangeText('  ',s,t.selectionEnd,'end')}});
+window.addEventListener('hashchange',()=>{closeModal();render()});
+window.addEventListener('storage',e=>{if(e.key===STORE_KEY&&load())render()});
+window.addEventListener('online',()=>toast('Back online'));window.addEventListener('offline',()=>toast('Offline — everything keeps working'));
+(function init(){if(!load()||!S.audit)seed();applyTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',applyTheme);$('#ver').textContent='v'+APP_VERSION;render();
+  if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})})();
+</script>
+</body>
+</html>
