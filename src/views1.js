@@ -1,8 +1,8 @@
 /* ---------- shared view logic ---------- */
-const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null};
+const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null,devF:'Open',devQ:''};
 const ACT={},CHG={};
-const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
-const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests'};
+const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['deviations','△','Deviations'],['training','◎','Training'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
+const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests',dev:'deviations'};
 const hasRole=r=>me().roles.includes(r);
 const isQA=()=>hasRole('QA');
 function guard(ok,msg){if(!ok)toast(msg);return ok}
@@ -41,6 +41,9 @@ function insights(){const I=[];const a=verifyAudit();
   const noCapa=S.defects.filter(d=>openBug(d)&&d.gxp!=='Low'&&d.rootCause&&!(d.capa.corrective&&d.capa.preventive));if(noCapa.length)I.push({t:'warn',i:'✱',h:`${noCapa.length} defect${noCapa.length>1?'s':''} missing CAPA`,x:noCapa.map(d=>d.id).join(', '),href:'#/defects'});
   const inrev=S.docs.filter(d=>d.status==='In Review');if(inrev.length)I.push({t:'info',i:'▤',h:`${inrev.length} document${inrev.length>1?'s':''} awaiting review/approval`,x:inrev.map(d=>`${d.id} ${d.title}`).join(' · '),href:'#/docs'});
   const unsigned=S.runs.filter(r=>!sigsAt(r,'Reviewed').length);if(unsigned.length)I.push({t:'info',i:'✒',h:`${unsigned.length} test run${unsigned.length>1?'s':''} awaiting independent review`,x:unsigned.map(r=>r.id).join(', '),href:'#/tests'});
+  const dvo=(S.deviations||[]).filter(devOverdue);if(dvo.length)I.push({t:'bad',i:'△',h:`${dvo.length} deviation${dvo.length>1?'s':''} past the 30-day closure target`,x:dvo.map(v=>`${v.id} ${v.title}`).join(' · '),href:'#/deviations'});
+  const dvn=(S.deviations||[]).filter(v=>openDev(v)&&!v.immediate.trim());if(dvn.length)I.push({t:'warn',i:'△',h:`${dvn.length} deviation${dvn.length>1?'s':''} without containment`,x:dvn.map(v=>v.id).join(', '),href:'#/deviations'});
+  let tO=0,tD=0;S.users.forEach(u=>trainingGaps(u.id).forEach(([,s])=>s.k==='Overdue'?tO++:tD++));if(tO)I.push({t:'bad',i:'◎',h:`${tO} overdue training assignment${tO>1?'s':''}`,x:'Users signing GxP records without current SOP training (21 CFR 11.10(i)).',href:'#/training'});if(tD)I.push({t:'warn',i:'◎',h:`${tD} training assignment${tD>1?'s':''} due`,x:'New effective SOP/policy versions require read-and-understood signatures.',href:'#/training'});
   const pend=S.changes.filter(c=>c.status==='Assessed');if(pend.length)I.push({t:'info',i:'⇄',h:`${pend.length} change${pend.length>1?'s':''} awaiting QA approval`,x:pend.map(c=>c.id+' '+c.title).join(' · '),href:'#/changes'});
   if(a.ok)I.push({t:'ok',i:'✓',h:'Audit trail intact',x:`${a.n} entries, SHA-256 hash chain verified (head ${short(a.head)}).`,href:'#/audit'});
   const o={bad:0,warn:1,info:2,ok:3};return I.sort((x,y)=>o[x.t]-o[y.t])}
@@ -80,6 +83,7 @@ function vDashboard(){
       <div class="card"><h2>Status overview</h2><div class="bars">
         ${bar('Documents',[[dc('Draft'),'#a5b4fc'],[dc('In Review'),'var(--warn)'],[dc('Approved'),'var(--info)'],[dc('Effective'),'var(--ok)']],Math.max(1,S.docs.length))}
         ${bar('Defects',[[bc('Open')+bc('Investigating'),'var(--bad)'],[bc('Fix In Progress')+bc('Ready for Verification'),'var(--warn)'],[bc('Verified')+bc('Closed'),'var(--ok)']],Math.max(1,S.defects.length))}
+        ${bar('Deviations',[[S.deviations.filter(v=>v.status==='Open').length,'var(--bad)'],[S.deviations.filter(v=>['Investigation','QA Review'].includes(v.status)).length,'var(--warn)'],[S.deviations.filter(v=>v.status==='Closed').length,'var(--ok)']],Math.max(1,S.deviations.length))}
         ${bar('Test cases',[[lr.filter(x=>x.status==='Pass').length,'var(--ok)'],[lr.filter(x=>x.status!=='Pass').length,'var(--bad)'],[S.tests.length-lr.length,'#c7cbe0']],Math.max(1,S.tests.length))}
         ${bar('Requirements',[[ver,'var(--ok)'],[states.filter(s=>s.k==='fail').length,'var(--bad)'],[states.filter(s=>s.k==='notrun').length,'var(--warn)'],[states.filter(s=>s.k==='none').length,'#c7cbe0']],Math.max(1,S.reqs.length))}
       </div></div>
@@ -113,7 +117,7 @@ function vDoc(p){const d=S.docs.find(x=>x.id===p.id);if(!d)return {title:'Not fo
   if(d.status==='Draft')acts+=`<button class="btn pri" data-act="docSubmit">Submit for review</button>`;
   if(d.status==='In Review'){acts+=`<button class="btn" data-act="docReview">✍ Review &amp; sign</button><button class="btn pri" data-act="docApprove">✍ QA approve</button><button class="btn" data-act="docReturn">Return to draft</button>`}
   if(d.status==='Approved')acts+=`<button class="btn pri" data-act="docEffective">Make effective</button>`;
-  if(d.status==='Effective')acts+=`<button class="btn" data-act="docRevise">Revise (new version)</button><button class="btn" data-act="docPeriodic">✍ Periodic review</button><button class="btn bad" data-act="docRetire">Retire</button>`;
+  if(d.status==='Effective')acts+=trainBtn(d)+`<button class="btn" data-act="docRevise">Revise (new version)</button><button class="btn" data-act="docPeriodic">✍ Periodic review</button><button class="btn bad" data-act="docRetire">Retire</button>`;
   if(d.status==='Draft'&&/^0\./.test(d.version))acts+=`<button class="btn bad" data-act="docDelete">Delete draft</button>`;
   const [tab,tb]=tabsBar('doc',[['view','Document'],...(d.status==='Draft'?[['edit','Edit']]:[]),['sig',`Signatures (${(d.signatures||[]).length})`],['hist','History']],'view');
   let body='';
@@ -212,7 +216,7 @@ ACT.theme=b=>{S.theme=b.dataset.v;save();applyTheme();render()};
 ACT.switchUser=b=>{S.currentUser=b.dataset.id;audit('User signed in','SYSTEM',me().name+' ('+me().role+')');save();render();toast('Signed in as '+me().name)};
 CHG.user=e=>{S.currentUser=e.value;audit('User signed in','SYSTEM',me().name+' ('+me().role+')');save();render();toast('Signed in as '+me().name)};
 ACT.resetDemo=b=>armed(b,()=>{seed();UI.tcSel.clear();location.hash='#/dashboard';render();toast('Demo data restored')});
-ACT.blankWS=b=>armed(b,()=>{const users=S.users,theme=S.theme;S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:users[0].id,theme,users,system:{name:'My GxP System',org:'My Organisation',gamp:'Category 5 — custom code',site:''},docs:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};audit('Workspace initialised','SYSTEM','Blank workspace');save();location.hash='#/dashboard';render()});
-CHG.importJSON=e=>{const f=e.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);if(!j.audit||!j.docs)throw 0;S=j;audit('Workspace imported','SYSTEM',f.name);save();render();toast('Imported '+f.name)}catch(x){toast('Not a GxP Studio export')}})};
+ACT.blankWS=b=>armed(b,()=>{const users=S.users,theme=S.theme;S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:users[0].id,theme,users,system:{name:'My GxP System',org:'My Organisation',gamp:'Category 5 — custom code',site:''},docs:[],deviations:[],training:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};audit('Workspace initialised','SYSTEM','Blank workspace');save();location.hash='#/dashboard';render()});
+CHG.importJSON=e=>{const f=e.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);if(!j.audit||!j.docs)throw 0;S=j;upgradeWorkspace();audit('Workspace imported','SYSTEM',f.name);save();render();toast('Imported '+f.name)}catch(x){toast('Not a GxP Studio export')}})};
 function vMore(){return {title:'More',html:`<h1 style="margin-bottom:14px">More</h1><div class="card p0 list">${NAV.slice(5).map(([r,i,l])=>`<a class="item" href="#/${r}"><span style="width:26px;text-align:center;font-size:17px">${i}</span><div class="main1"><div class="ttl">${l}</div></div><span class="muted">›</span></a>`).join('')}</div>
   <div class="card" style="margin-top:14px"><div class="small muted">GxP Studio v${APP_VERSION} · ${esc(S.system.org)}</div></div>`}}

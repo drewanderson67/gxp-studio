@@ -233,7 +233,7 @@ table.t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:t
 <nav class="tabbar" id="tabbar"></nav>
 <button class="fab" id="fab" aria-label="New">+</button>
 <script>'use strict';
-const APP_VERSION='1.0.0';
+const APP_VERSION='1.1.0';
 const STORE_KEY='gxps.v1';
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -267,8 +267,8 @@ const userName=id=>(S.users.find(u=>u.id===id)||{name:id||'—'}).name;
 const userColor=id=>({u1:'#4f46e5',u2:'#0f9d6b',u3:'#d23a4a',u4:'#c27a00'}[id]||'#7c3aed');
 const initials=n=>String(n).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
 const avatar=id=>`<span class="av" style="background:${userColor(id)}">${initials(userName(id))}</span>`;
-const findAny=id=>{if(!id)return null;const p=id.split('-')[0];const col={DOC:'docs',REQ:'reqs',TC:'tests',TR:'runs',CR:'changes',BUG:'defects',CAPA:'defects',CV:'code'}[p];return col?S[col].find(x=>x.id===id):null};
-const routeFor=id=>{const p=String(id).split('-')[0];return {DOC:'#/doc/',REQ:'#/trace?req=',TC:'#/test/',TR:'#/run/',CR:'#/change/',BUG:'#/defect/',CV:'#/code/'}[p]+id};
+const findAny=id=>{if(!id)return null;const p=id.split('-')[0];const col={DOC:'docs',REQ:'reqs',TC:'tests',TR:'runs',CR:'changes',BUG:'defects',CAPA:'defects',CV:'code',DEV:'deviations',TRN:'training'}[p];return col?S[col].find(x=>x.id===id):null};
+const routeFor=id=>{const p=String(id).split('-')[0];return {DOC:'#/doc/',REQ:'#/trace?req=',TC:'#/test/',TR:'#/run/',CR:'#/change/',BUG:'#/defect/',CV:'#/code/',DEV:'#/dev/',TRN:'#/training?r='}[p]+id};
 const link=id=>id?`<a href="${routeFor(id)}" class="mono">${esc(id)}</a>`:'—';
 
 /* ---------- audit trail (hash chained) ---------- */
@@ -288,17 +288,18 @@ function modal(title,body,foot,wide){closeModal();const s=document.createElement
 function closeModal(){$$('.scrim').forEach(x=>x.remove())}
 /* two-click confirm (no confirm() — blocked in preview iframes) */
 function armed(btn,fn,label='Click again to confirm'){if(btn.classList.contains('armed')){fn();return}const o=btn.innerHTML;btn.classList.add('armed');btn.textContent=label;setTimeout(()=>{if(btn.isConnected){btn.classList.remove('armed');btn.innerHTML=o}},3500)}
-const statusTone=s=>({Draft:'',New:'',Open:'bad','In Review':'warn',Reviewed:'info',Approved:'info',Effective:'ok',Superseded:'',Retired:'',Assessed:'warn',Implemented:'info',Verified:'ok',Closed:'ok',Rejected:'bad',Investigating:'warn','Fix In Progress':'info','Ready for Verification':'brand',Pass:'ok',Fail:'bad',Error:'warn',Baseline:'ok',Candidate:'brand',Released:'ok',Critical:'bad',Major:'warn',Minor:'info',High:'bad',Medium:'warn',Low:'ok'}[s]||'');
+const statusTone=s=>({Draft:'',New:'',Open:'bad','In Review':'warn',Reviewed:'info',Approved:'info',Effective:'ok',Superseded:'',Retired:'',Assessed:'warn',Implemented:'info',Verified:'ok',Closed:'ok',Rejected:'bad',Investigating:'warn','Fix In Progress':'info','Ready for Verification':'brand',Pass:'ok',Fail:'bad',Error:'warn',Baseline:'ok',Candidate:'brand',Released:'ok',Critical:'bad',Major:'warn',Minor:'info',High:'bad',Medium:'warn',Low:'ok',Investigation:'warn','QA Review':'brand',Current:'ok',Due:'warn',Overdue:'bad'}[s]||'');
 const pill=(s,t)=>`<span class="pill ${t??statusTone(s)}">${esc(s)}</span>`;
 const stepper=(flow,cur)=>{const i=flow.indexOf(cur);return `<div class="steps">${flow.map((f,k)=>`<span class="${k<i?'done':k===i?'cur':''}">${k<i?'✓ ':''}${esc(f)}</span>`).join('')}</div>`};
 function blobLink(text,name,type,label,cls='btn'){const u=URL.createObjectURL(new Blob([text],{type}));return `<a class="${cls}" href="${u}" download="${esc(name)}">${label}</a>`}
 
 /* ---------- e-signature (21 CFR Part 11 style) ---------- */
-function esign({record,meanings,title,onSign,requireReason=true}){
+function esign({record,meanings,title,onSign,requireReason=true,attach=true}){
   const u=me();
   const m=modal(title||'Electronic signature',`
     <div class="small muted">By signing, you confirm this electronic signature is the legally binding equivalent of your handwritten signature (21 CFR 11.100).</div>
     <div class="kv"><dt>Record</dt><dd class="mono">${esc(record.id)} · ${esc(record.title||'')}</dd><dt>Signer</dt><dd>${esc(u.name)} (${esc(u.role)})</dd><dt>Record hash</dt><dd class="hashv">${recordHash(record)}</dd></div>
+    ${typeof trainingWarn==='function'?trainingWarn(u.id):''}
     <label class="f">Meaning of signature<select class="inp" id="sgM">${meanings.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>
     <label class="f">Reason / comment ${requireReason?'(required)':''}<input class="inp" id="sgR" placeholder="e.g. Reviewed against SOP-QA-012"></label>
     <label class="f">Re-enter password / PIN<input class="inp" id="sgP" type="password" autocomplete="off" inputmode="numeric" placeholder="Demo PIN for every user: 1234"></label>
@@ -309,7 +310,7 @@ function esign({record,meanings,title,onSign,requireReason=true}){
     if(requireReason&&!reason){$('#sgE',m).textContent='A reason is required.';return}
     const sig={by:u.id,name:u.name,role:u.role,meaning,reason,at:nowISO(),version:record.version||null,hash:recordHash(record)};
     sig.sigHash=sha256(JSON.stringify(sig));
-    (record.signatures=record.signatures||[]).push(sig);
+    if(attach)(record.signatures=record.signatures||[]).push(sig);
     audit('E-signed ('+meaning+')',record.id,reason);
     closeModal();onSign&&onSign(sig);save();render()};
 }
@@ -617,7 +618,7 @@ function seed(){
   S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:'u1',theme:'auto',
     users:[{id:'u1',name:'Alex Rivera',role:'Developer',roles:['Author'],pin:'1234'},{id:'u2',name:'Priya Shah',role:'QA Tester',roles:['Tester'],pin:'1234'},{id:'u3',name:'Morgan Lee',role:'QA Approver',roles:['QA'],pin:'1234'},{id:'u4',name:'Sam Okafor',role:'System Owner',roles:['Owner'],pin:'1234'}],
     system:{name:'LabTrack LIMS',org:'Northwind Biologics',gamp:'Category 5 — custom code',site:'Boston (BOS)'},
-    docs:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};
+    docs:[],deviations:[],training:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};
   const ev=[];const at=(d,fn)=>ev.push({d,fn});
   const sig=(rec,uid,meaning,reason,d)=>{const u=S.users.find(x=>x.id===uid);const s={by:uid,name:u.name,role:u.role,meaning,reason,at:t(d),version:rec.version||null,hash:recordHash(rec)};s.sigHash=sha256(JSON.stringify(s));(rec.signatures=rec.signatures||[]).push(s)};
 
@@ -738,16 +739,17 @@ function seed(){
   at(-15,()=>audit('Defect raised',b3.id,b3.title,'u3'));at(-1,()=>audit('Defect raised',b1.id,b1.title,'u2'));
   cr1.defects=[b1.id];
 
+  seedQuality(t,at);
   ev.sort((a,b)=>a.d-b.d).forEach(e=>{S._clock=t(e.d);e.fn()});delete S._clock;
   audit('Workspace initialised','SYSTEM','Demo data loaded (v'+APP_VERSION+')','u4');
   save();
 }
 
 /* ---------- shared view logic ---------- */
-const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null};
+const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null,devF:'Open',devQ:''};
 const ACT={},CHG={};
-const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
-const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests'};
+const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['deviations','△','Deviations'],['training','◎','Training'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
+const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests',dev:'deviations'};
 const hasRole=r=>me().roles.includes(r);
 const isQA=()=>hasRole('QA');
 function guard(ok,msg){if(!ok)toast(msg);return ok}
@@ -786,6 +788,9 @@ function insights(){const I=[];const a=verifyAudit();
   const noCapa=S.defects.filter(d=>openBug(d)&&d.gxp!=='Low'&&d.rootCause&&!(d.capa.corrective&&d.capa.preventive));if(noCapa.length)I.push({t:'warn',i:'✱',h:`${noCapa.length} defect${noCapa.length>1?'s':''} missing CAPA`,x:noCapa.map(d=>d.id).join(', '),href:'#/defects'});
   const inrev=S.docs.filter(d=>d.status==='In Review');if(inrev.length)I.push({t:'info',i:'▤',h:`${inrev.length} document${inrev.length>1?'s':''} awaiting review/approval`,x:inrev.map(d=>`${d.id} ${d.title}`).join(' · '),href:'#/docs'});
   const unsigned=S.runs.filter(r=>!sigsAt(r,'Reviewed').length);if(unsigned.length)I.push({t:'info',i:'✒',h:`${unsigned.length} test run${unsigned.length>1?'s':''} awaiting independent review`,x:unsigned.map(r=>r.id).join(', '),href:'#/tests'});
+  const dvo=(S.deviations||[]).filter(devOverdue);if(dvo.length)I.push({t:'bad',i:'△',h:`${dvo.length} deviation${dvo.length>1?'s':''} past the 30-day closure target`,x:dvo.map(v=>`${v.id} ${v.title}`).join(' · '),href:'#/deviations'});
+  const dvn=(S.deviations||[]).filter(v=>openDev(v)&&!v.immediate.trim());if(dvn.length)I.push({t:'warn',i:'△',h:`${dvn.length} deviation${dvn.length>1?'s':''} without containment`,x:dvn.map(v=>v.id).join(', '),href:'#/deviations'});
+  let tO=0,tD=0;S.users.forEach(u=>trainingGaps(u.id).forEach(([,s])=>s.k==='Overdue'?tO++:tD++));if(tO)I.push({t:'bad',i:'◎',h:`${tO} overdue training assignment${tO>1?'s':''}`,x:'Users signing GxP records without current SOP training (21 CFR 11.10(i)).',href:'#/training'});if(tD)I.push({t:'warn',i:'◎',h:`${tD} training assignment${tD>1?'s':''} due`,x:'New effective SOP/policy versions require read-and-understood signatures.',href:'#/training'});
   const pend=S.changes.filter(c=>c.status==='Assessed');if(pend.length)I.push({t:'info',i:'⇄',h:`${pend.length} change${pend.length>1?'s':''} awaiting QA approval`,x:pend.map(c=>c.id+' '+c.title).join(' · '),href:'#/changes'});
   if(a.ok)I.push({t:'ok',i:'✓',h:'Audit trail intact',x:`${a.n} entries, SHA-256 hash chain verified (head ${short(a.head)}).`,href:'#/audit'});
   const o={bad:0,warn:1,info:2,ok:3};return I.sort((x,y)=>o[x.t]-o[y.t])}
@@ -825,6 +830,7 @@ function vDashboard(){
       <div class="card"><h2>Status overview</h2><div class="bars">
         ${bar('Documents',[[dc('Draft'),'#a5b4fc'],[dc('In Review'),'var(--warn)'],[dc('Approved'),'var(--info)'],[dc('Effective'),'var(--ok)']],Math.max(1,S.docs.length))}
         ${bar('Defects',[[bc('Open')+bc('Investigating'),'var(--bad)'],[bc('Fix In Progress')+bc('Ready for Verification'),'var(--warn)'],[bc('Verified')+bc('Closed'),'var(--ok)']],Math.max(1,S.defects.length))}
+        ${bar('Deviations',[[S.deviations.filter(v=>v.status==='Open').length,'var(--bad)'],[S.deviations.filter(v=>['Investigation','QA Review'].includes(v.status)).length,'var(--warn)'],[S.deviations.filter(v=>v.status==='Closed').length,'var(--ok)']],Math.max(1,S.deviations.length))}
         ${bar('Test cases',[[lr.filter(x=>x.status==='Pass').length,'var(--ok)'],[lr.filter(x=>x.status!=='Pass').length,'var(--bad)'],[S.tests.length-lr.length,'#c7cbe0']],Math.max(1,S.tests.length))}
         ${bar('Requirements',[[ver,'var(--ok)'],[states.filter(s=>s.k==='fail').length,'var(--bad)'],[states.filter(s=>s.k==='notrun').length,'var(--warn)'],[states.filter(s=>s.k==='none').length,'#c7cbe0']],Math.max(1,S.reqs.length))}
       </div></div>
@@ -858,7 +864,7 @@ function vDoc(p){const d=S.docs.find(x=>x.id===p.id);if(!d)return {title:'Not fo
   if(d.status==='Draft')acts+=`<button class="btn pri" data-act="docSubmit">Submit for review</button>`;
   if(d.status==='In Review'){acts+=`<button class="btn" data-act="docReview">✍ Review &amp; sign</button><button class="btn pri" data-act="docApprove">✍ QA approve</button><button class="btn" data-act="docReturn">Return to draft</button>`}
   if(d.status==='Approved')acts+=`<button class="btn pri" data-act="docEffective">Make effective</button>`;
-  if(d.status==='Effective')acts+=`<button class="btn" data-act="docRevise">Revise (new version)</button><button class="btn" data-act="docPeriodic">✍ Periodic review</button><button class="btn bad" data-act="docRetire">Retire</button>`;
+  if(d.status==='Effective')acts+=trainBtn(d)+`<button class="btn" data-act="docRevise">Revise (new version)</button><button class="btn" data-act="docPeriodic">✍ Periodic review</button><button class="btn bad" data-act="docRetire">Retire</button>`;
   if(d.status==='Draft'&&/^0\./.test(d.version))acts+=`<button class="btn bad" data-act="docDelete">Delete draft</button>`;
   const [tab,tb]=tabsBar('doc',[['view','Document'],...(d.status==='Draft'?[['edit','Edit']]:[]),['sig',`Signatures (${(d.signatures||[]).length})`],['hist','History']],'view');
   let body='';
@@ -957,8 +963,8 @@ ACT.theme=b=>{S.theme=b.dataset.v;save();applyTheme();render()};
 ACT.switchUser=b=>{S.currentUser=b.dataset.id;audit('User signed in','SYSTEM',me().name+' ('+me().role+')');save();render();toast('Signed in as '+me().name)};
 CHG.user=e=>{S.currentUser=e.value;audit('User signed in','SYSTEM',me().name+' ('+me().role+')');save();render();toast('Signed in as '+me().name)};
 ACT.resetDemo=b=>armed(b,()=>{seed();UI.tcSel.clear();location.hash='#/dashboard';render();toast('Demo data restored')});
-ACT.blankWS=b=>armed(b,()=>{const users=S.users,theme=S.theme;S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:users[0].id,theme,users,system:{name:'My GxP System',org:'My Organisation',gamp:'Category 5 — custom code',site:''},docs:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};audit('Workspace initialised','SYSTEM','Blank workspace');save();location.hash='#/dashboard';render()});
-CHG.importJSON=e=>{const f=e.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);if(!j.audit||!j.docs)throw 0;S=j;audit('Workspace imported','SYSTEM',f.name);save();render();toast('Imported '+f.name)}catch(x){toast('Not a GxP Studio export')}})};
+ACT.blankWS=b=>armed(b,()=>{const users=S.users,theme=S.theme;S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:users[0].id,theme,users,system:{name:'My GxP System',org:'My Organisation',gamp:'Category 5 — custom code',site:''},docs:[],deviations:[],training:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};audit('Workspace initialised','SYSTEM','Blank workspace');save();location.hash='#/dashboard';render()});
+CHG.importJSON=e=>{const f=e.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);if(!j.audit||!j.docs)throw 0;S=j;upgradeWorkspace();audit('Workspace imported','SYSTEM',f.name);save();render();toast('Imported '+f.name)}catch(x){toast('Not a GxP Studio export')}})};
 function vMore(){return {title:'More',html:`<h1 style="margin-bottom:14px">More</h1><div class="card p0 list">${NAV.slice(5).map(([r,i,l])=>`<a class="item" href="#/${r}"><span style="width:26px;text-align:center;font-size:17px">${i}</span><div class="main1"><div class="ttl">${l}</div></div><span class="muted">›</span></a>`).join('')}</div>
   <div class="card" style="margin-top:14px"><div class="small muted">GxP Studio v${APP_VERSION} · ${esc(S.system.org)}</div></div>`}}
 
@@ -1142,6 +1148,7 @@ function bugModal(pre){pre=pre||{};const m=modal('Raise defect / deviation',`<la
   <label class="f">Description<textarea class="inp" id="nbD">${esc(pre.description||'')}</textarea></label><div class="fields"><label class="f">Expected<input class="inp" id="nbE" value="${esc(pre.expected||'')}"></label><label class="f">Actual<input class="inp" id="nbX" value="${esc(pre.actual||'')}"></label></div>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="nbGo">Raise</button>`);
   $('#nbGo',m).onclick=()=>{const title=val('nbT',m).trim();if(!title){toast('Title required');return}const id=nextId('BUG');
     S.defects.unshift({id,title,severity:val('nbS',m),gxp:val('nbG',m),status:'Open',reporter:S.currentUser,assignee:val('nbA',m),created:nowISO(),found:pre.found||'Manual report',run:pre.run||null,tc:val('nbC',m)||null,cr:val('nbR',m)||null,description:val('nbD',m),steps:'',expected:val('nbE',m),actual:val('nbX',m),rcCategory:'',rootCause:'',fix:'',capa:{corrective:'',preventive:'',effectiveness:''},history:[{at:nowISO(),by:S.currentUser,text:'Raised'+(pre.run?' from '+pre.run:'')}],signatures:[]});
+    if(pre.dev){const v=S.deviations.find(x=>x.id===pre.dev);if(v){v.bugs.push(id);hist(v,'Linked '+id);audit('CAPA linked',v.id,id)}}
     audit('Defect raised',id,title);save();closeModal();location.hash='#/defect/'+id}}
 ACT.bugNew=b=>bugModal(b&&b.dataset&&b.dataset.cr?{cr:b.dataset.cr}:{});
 const curBug=()=>S.defects.find(x=>x.id===parseHash().id);
@@ -1176,16 +1183,112 @@ ACT.bugAdv=()=>{const d=curBug();if(d.status!=='Closed'&&readBug(d)){hist(d,'Edi
     esign({record:d,meanings:['Closed'],title:'QA closure',onSign:()=>{d.status='Closed';hist(d,'Closed');audit('Status → Closed',d.id,'')}});return}
   go()};
 
+/* ---------- training records ---------- */
+const TRAIN_TYPES=['SOP','Policy'],TRAIN_GRACE=30;
+const trainDocs=()=>S.docs.filter(d=>d.status==='Effective'&&TRAIN_TYPES.includes(d.type));
+function trainState(uid,d){const rec=(S.training||[]).filter(x=>x.user===uid&&x.doc===d.id).sort(byAt).at(-1);
+  if(rec&&rec.version===d.version)return {k:'Current',rec};
+  const days=Math.floor((Date.now()-new Date(d.effective||d.updated))/DAY);return {k:days>TRAIN_GRACE?'Overdue':'Due',rec,days}}
+const trainingGaps=uid=>trainDocs().map(d=>[d,trainState(uid,d)]).filter(([,s])=>s.k!=='Current');
+function trainingWarn(uid){const g=trainingGaps(uid);return g.length?`<div class="small" style="background:var(--warnSoft);color:var(--warn);padding:8px 10px;border-radius:10px;margin:8px 0">⚠ Training not current for ${esc(userName(uid))}: ${g.map(([d,s])=>`${d.id} v${esc(d.version)} (${s.k})`).join(', ')}</div>`:''}
+const trainBtn=d=>TRAIN_TYPES.includes(d.type)&&d.status==='Effective'&&trainState(S.currentUser,d).k!=='Current'?`<button class="btn pri" data-act="trainSign" data-doc="${d.id}">✍ Read &amp; understood</button>`:'';
+ACT.trainSign=b=>{const d=S.docs.find(x=>x.id===(b.dataset.doc||parseHash().id));if(!d)return;
+  esign({record:d,meanings:['Read and understood'],title:`Training — ${d.id} v${d.version}`,requireReason:false,attach:false,
+    onSign:s=>{S.training.push({id:nextId('TRN'),doc:d.id,version:d.version,user:s.by,at:s.at,sig:s});audit('Training completed',d.id,`${userName(s.by)} — v${d.version}`);toast('Training recorded')}})};
+function vTraining(){const docs=trainDocs();let cur=0,tot=0,over=0;
+  const cell=(u,d)=>{const s=trainState(u.id,d);tot++;if(s.k==='Current')cur++;if(s.k==='Overdue')over++;
+    return `<td>${s.k==='Current'?`<span class="pill ok" title="Signed ${fmtUTC(s.rec.at)}">✓ v${esc(s.rec.version)}</span>`:pill(s.k)+(s.rec?`<div class="small muted">had v${esc(s.rec.version)}</div>`:'')}</td>`};
+  const rows=S.users.map(u=>`<tr><td><b>${esc(u.name)}</b><div class="small muted">${esc(u.role)}</div></td>${docs.map(d=>cell(u,d)).join('')}</tr>`).join('');
+  const pct=tot?Math.round(cur/tot*100):100;const mine=trainingGaps(S.currentUser);
+  const recent=(S.training||[]).slice().sort(byAt).reverse().slice(0,10);
+  return {title:'Training',html:`<div class="ph"><div class="t"><h1>Training records</h1><p>Read-and-understood e-signatures against effective SOPs and policies (21 CFR 11.10(i), EU GMP Ch. 2). A new effective version resets training to Due; Overdue after ${TRAIN_GRACE} days.</p></div></div>
+  <div class="grid g3"><div class="card kpi"><div class="l">Training compliance</div><div class="v" style="color:${pct===100?'var(--ok)':'inherit'}">${pct}%</div><div class="s">${cur} of ${tot} assignments current</div><div class="bar"><i style="width:${pct}%"></i></div></div>
+    <div class="card kpi"><div class="l">Overdue</div><div class="v" style="color:${over?'var(--bad)':'inherit'}">${over}</div><div class="s">past the ${TRAIN_GRACE}-day window</div></div>
+    <div class="card kpi"><div class="l">My open training</div><div class="v">${mine.length}</div><div class="s">${esc(me().name)}</div></div></div>
+  <div class="card p0 list" style="margin-top:14px"><div style="padding:14px 16px 6px"><h2 style="margin:0">My training — ${esc(me().name)}</h2></div>${mine.map(([d,s])=>`<div class="item"><span class="id">${d.id}</span><div class="main1"><div class="ttl">${esc(d.title)}</div><div class="meta"><span>v${esc(d.version)}</span><span>effective ${fmtD(d.effective)}</span></div></div>${pill(s.k)}<a class="btn sm" href="#/doc/${d.id}">Read</a>${trainBtn(d).replace('btn pri','btn pri sm')}</div>`).join('')||'<div class="empty">✓ All training current.</div>'}</div>
+  <div class="card p0" style="margin-top:14px"><div style="padding:14px 16px 6px"><h2 style="margin:0">Training matrix</h2></div><div class="tblwrap"><table class="t"><thead><tr><th>User</th>${docs.map(d=>`<th><a href="#/doc/${d.id}" class="mono">${d.id}</a> v${esc(d.version)}<div class="small muted" style="font-weight:500;text-transform:none;letter-spacing:0">${esc(d.title)}</div></th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
+  <div class="card" style="margin-top:14px"><h2>Recent training signatures</h2>${recent.map(r=>sigBlock(r.sig)+`<div class="small muted" style="margin:-2px 0 6px 4px">${link(r.doc)} v${esc(r.version)} · ${r.id}</div>`).join('')||'<div class="muted small">None yet.</div>'}</div>`}}
+
+/* ---------- deviations ---------- */
+const DEV_FLOW=['Open','Investigation','QA Review','Closed'],DEV_CLASS=['Critical','Major','Minor'];
+const DEV_AREAS=['Computerized system','Data integrity','Laboratory','Manufacturing','Documentation','Training','Supplier'];
+const openDev=v=>v.status!=='Closed';
+const devDue=v=>new Date(new Date(v.detected).getTime()+30*DAY).toISOString();
+const devOverdue=v=>openDev(v)&&daysUntil(devDue(v))<0;
+function vDeviations(){const q=UI.devQ.toLowerCase();const list=S.deviations.filter(v=>(UI.devF==='All'||(UI.devF==='Open'?openDev(v):!openDev(v)))&&(!q||(v.id+' '+v.title).toLowerCase().includes(q)));
+  return {title:'Deviations',fab:'devNew',html:`<div class="ph"><div class="t"><h1>Deviations</h1><p>Unplanned events against procedures or validated state: containment, impact assessment, root cause, CAPA and QA closure within 30 days.</p></div><button class="btn pri hide-m" data-act="devNew">+ Report deviation</button></div>
+  <div class="toolbar"><input class="search" data-inp="devQ" placeholder="Search deviations…" value="${esc(UI.devQ)}">${seg('devF',['Open','Closed','All'])}</div>
+  <div class="card p0 list">${list.map(v=>`<a class="item" href="#/dev/${v.id}"><span class="id">${v.id}</span><div class="main1"><div class="ttl">${esc(v.title)}</div><div class="meta"><span>${esc(v.area)}</span><span>${esc(userName(v.owner))}</span>${openDev(v)?`<span style="${devOverdue(v)?'color:var(--bad);font-weight:600':''}">due ${fmtD(devDue(v))}</span>`:''}<span>${ago(v.detected)}</span></div></div>${pill(v.classification)}${pill(v.status)}</a>`).join('')||'<div class="empty">No deviations.</div>'}</div>`}}
+ACT.devNew=()=>{const m=modal('Report deviation',`<label class="f">Title<input class="inp" id="dvT"></label>
+  <div class="fields"><label class="f">Classification<select class="inp" id="dvC">${opts(DEV_CLASS,'Major')}</select></label><label class="f">Area<select class="inp" id="dvA">${opts(DEV_AREAS)}</select></label><label class="f">Owner<select class="inp" id="dvO">${userOpts('u1')}</select></label></div>
+  <div class="fields"><label class="f">Occurred<input class="inp" id="dvW" type="date" value="${nowISO().slice(0,10)}"></label><label class="f">Change control<select class="inp" id="dvR"><option value="">—</option>${S.changes.map(c=>`<option value="${c.id}">${c.id} ${esc(c.title)}</option>`).join('')}</select></label></div>
+  <label class="f">What happened<textarea class="inp" id="dvD"></textarea></label><label class="f">Immediate action / containment<textarea class="inp" id="dvI" placeholder="e.g. Batch placed on QA hold"></textarea></label>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="dvGo">Report</button>`);
+  $('#dvGo',m).onclick=()=>{const title=val('dvT',m).trim();if(!title){toast('Title required');return}const id=nextId('DEV');
+    S.deviations.unshift({id,title,classification:val('dvC',m),area:val('dvA',m),status:'Open',reporter:S.currentUser,owner:val('dvO',m),occurred:new Date(val('dvW',m)||Date.now()).toISOString(),detected:nowISO(),cr:val('dvR',m)||null,
+      description:val('dvD',m),immediate:val('dvI',m),impact:'',rcCategory:'',rootCause:'',capa:'',bugs:[],history:[{at:nowISO(),by:S.currentUser,text:'Reported'}],signatures:[]});
+    audit('Deviation reported',id,title);save();closeModal();location.hash='#/dev/'+id}};
+const curDev=()=>S.deviations.find(x=>x.id===parseHash().id);
+function readDev(v){if(!$('#vT'))return false;const b=JSON.stringify(v);Object.assign(v,{title:val('vT').trim()||v.title,classification:val('vC'),area:val('vA'),owner:val('vO'),description:val('vD'),immediate:val('vI'),impact:val('vM'),rcCategory:val('vK'),rootCause:val('vRC'),capa:val('vP'),cr:val('vR')||null});return JSON.stringify(v)!==b}
+function vDeviation(p){const v=S.deviations.find(x=>x.id===p.id);if(!v)return {title:'Not found',html:'<div class="empty">Deviation not found.</div>'};
+  const lock=v.status==='Closed',ro=lock?'disabled':'';const next=DEV_FLOW[DEV_FLOW.indexOf(v.status)+1];const due=devDue(v),n=daysUntil(due);
+  const bugs=v.bugs.map(id=>S.defects.find(d=>d.id===id)).filter(Boolean);
+  return {title:v.id,back:'#/deviations',html:`<div class="ph"><div class="t"><div class="row"><span class="mono muted">${v.id}</span>${pill(v.status)}${pill(v.classification)}${openDev(v)?pill(n<0?`Overdue ${-n}d`:`Due in ${n}d`,n<0?'bad':n<=7?'warn':''):''}</div><h1 style="margin-top:6px">${esc(v.title)}</h1><p>Reported by ${esc(userName(v.reporter))} · occurred ${fmtD(v.occurred)} · detected ${fmtD(v.detected)}</p>${stepper(DEV_FLOW,v.status)}</div></div>
+  <div class="row" style="margin-bottom:12px">${next?`<button class="btn pri" data-act="devAdv">${next!=='Investigation'?'✍ ':''}Move to ${esc(next)}</button>`:''}${!lock?'<button class="btn" data-act="devSave">Save changes</button><button class="btn" data-act="devBug">+ Raise linked defect / CAPA</button>':''}</div>
+  <div class="grid g2"><div class="card"><h2>Event</h2><label class="f">Title<input class="inp" id="vT" value="${esc(v.title)}" ${ro}></label>
+    <div class="fields" style="margin-top:10px"><label class="f">Classification<select class="inp" id="vC" ${ro}>${opts(DEV_CLASS,v.classification)}</select></label><label class="f">Area<select class="inp" id="vA" ${ro}>${opts(DEV_AREAS,v.area)}</select></label><label class="f">Owner<select class="inp" id="vO" ${ro}>${userOpts(v.owner)}</select></label></div>
+    <label class="f" style="margin-top:10px">What happened<textarea class="inp" id="vD" ${ro}>${esc(v.description)}</textarea></label>
+    <label class="f" style="margin-top:10px">Immediate action / containment<textarea class="inp" id="vI" ${ro}>${esc(v.immediate)}</textarea></label>
+    <label class="f" style="margin-top:10px">Change control<select class="inp" id="vR" ${ro}><option value="">—</option>${S.changes.map(c=>`<option value="${c.id}" ${c.id===v.cr?'selected':''}>${c.id}</option>`).join('')}</select></label></div>
+  <div><div class="card"><h2>Investigation</h2><label class="f">Impact assessment (product, patient, data)<textarea class="inp" id="vM" ${ro}>${esc(v.impact)}</textarea></label>
+    <label class="f" style="margin-top:10px">Root cause category<select class="inp" id="vK" ${ro}><option value="">— select —</option>${opts(RC_CATS,v.rcCategory)}</select></label>
+    <label class="f" style="margin-top:10px">Root cause<textarea class="inp" id="vRC" ${ro} placeholder="Why 1… Why 2… Why 3…">${esc(v.rootCause)}</textarea></label></div>
+  <div class="card"><h2>CAPA</h2><label class="f">CAPA plan${v.classification!=='Minor'?' (required for Major/Critical)':''}<textarea class="inp" id="vP" ${ro}>${esc(v.capa)}</textarea></label>
+    <div class="small" style="margin-top:10px">Linked defects / CAPA: ${bugs.length?bugs.map(b=>`${link(b.id)} ${pill(b.status)}`).join(' '):'<span class="muted">none</span>'}</div></div></div></div>
+  <div class="grid g2" style="margin-top:14px"><div class="card"><h2>Signatures</h2>${sigsHTML(v)}</div><div class="card"><h2>History</h2>${histHTML(v.history)}</div></div>`}}
+ACT.devSave=()=>{const v=curDev();if(readDev(v)){hist(v,'Edited');audit('Deviation modified',v.id,'');save();render();toast('Saved')}else toast('No changes')};
+ACT.devBug=()=>{const v=curDev();if(readDev(v)){hist(v,'Edited');save()}bugModal({title:`CAPA for ${v.id}: ${v.title}`,description:v.description,severity:v.classification,gxp:'High',found:'Deviation '+v.id,cr:v.cr,dev:v.id})};
+ACT.devAdv=()=>{const v=curDev();if(v.status!=='Closed'&&readDev(v)){hist(v,'Edited');audit('Deviation modified',v.id,'')}const next=DEV_FLOW[DEV_FLOW.indexOf(v.status)+1];
+  if(next==='Investigation'){if(!guard(v.immediate.trim(),'Record the immediate action / containment first.')){save();render();return}v.status=next;hist(v,next);audit('Status → '+next,v.id,'');save();render();return}
+  if(next==='QA Review'){if(!guard(v.impact.trim()&&v.rcCategory&&v.rootCause.trim(),'Complete the impact assessment and root cause first.')||!guard(v.classification==='Minor'||v.capa.trim()||v.bugs.length,'Major/Critical deviations require a CAPA plan or linked defect.')){save();render();return}
+    esign({record:v,meanings:['Investigation complete'],title:'Submit for QA review',onSign:()=>{v.status='QA Review';hist(v,'QA Review');audit('Status → QA Review',v.id,'')}});return}
+  if(next==='Closed'){if(!guard(isQA(),'Only QA can close deviations.')||!guard(S.currentUser!==v.owner&&S.currentUser!==v.reporter,'Independent QA review: the owner/reporter cannot close their own deviation.'))return;
+    esign({record:v,meanings:['QA approved — deviation closed'],title:'QA closure',onSign:()=>{v.status='Closed';v.closed=nowISO();hist(v,'Closed');audit('Status → Closed',v.id,'')}})}};
+
+/* ---------- demo data for these modules ---------- */
+function seedQuality(t,at){S.training=S.training||[];S.deviations=S.deviations||[];
+  const mk=(uid,doc,ver,d)=>{const u=S.users.find(x=>x.id===uid);if(!u||!doc)return;const s={by:uid,name:u.name,role:u.role,meaning:'Read and understood',reason:'',at:t(d),version:ver,hash:recordHash(doc)};s.sigHash=sha256(JSON.stringify(s));
+    const r={id:nextId('TRN'),doc:doc.id,version:ver,user:uid,at:s.at,sig:s};S.training.push(r);at(d,()=>audit('Training completed',doc.id,`${u.name} — v${ver}`,uid))};
+  const D=id=>S.docs.find(d=>d.id===id);const csv=D('DOC-0001'),cc=D('DOC-0002'),pol=D('DOC-0007');
+  ['u1','u2','u3','u4'].forEach((u,i)=>{mk(u,cc,'4.0',-740+i);if(u!=='u2')mk(u,csv,'3.0',-385+i);if(u!=='u4')mk(u,pol,'2.0',-305+i)});
+  mk('u2',csv,'2.0',-600);
+  const sg=(v,uid,meaning,reason,d)=>{const u=S.users.find(x=>x.id===uid);const s={by:uid,name:u.name,role:u.role,meaning,reason,at:t(d),version:null,hash:recordHash(v)};s.sigHash=sha256(JSON.stringify(s));v.signatures.push(s)};
+  const v1={id:nextId('DEV'),title:'LIMS missed 42 min of freezer FZ-07 temperature readings',classification:'Major',area:'Computerized system',status:'Investigation',reporter:'u2',owner:'u1',occurred:t(-6),detected:t(-5),cr:null,
+    description:'Daily review found no FZ-07 readings between 02:14 and 02:56 UTC. Samples for stability study STB-112 were stored in FZ-07.',immediate:'FZ-07 contents placed on QA hold; independent chart-recorder data retrieved for the gap (no excursion observed).',
+    impact:'',rcCategory:'',rootCause:'',capa:'',bugs:[],history:[{at:t(-5),by:'u2',text:'Reported'},{at:t(-4),by:'u1',text:'Investigation'}],signatures:[]};
+  const v2={id:nextId('DEV'),title:'OQ executed against superseded test script version',classification:'Minor',area:'Documentation',status:'Closed',reporter:'u3',owner:'u2',occurred:t(-50),detected:t(-49),cr:null,
+    description:'TC-0003 was executed from a printed v0.9 script after v1.0 was approved.',immediate:'Results invalidated; TC-0003 re-executed with v1.0.',impact:'No product or data impact — re-execution passed.',rcCategory:'Procedure / human error',
+    rootCause:'Printed copies were not controlled; no version check before execution.',capa:'Added "confirm approved version" step to the execution checklist; printing of scripts discontinued.',bugs:[],closed:t(-44),
+    history:[{at:t(-49),by:'u3',text:'Reported'},{at:t(-48),by:'u2',text:'Investigation'},{at:t(-45),by:'u2',text:'QA Review'},{at:t(-44),by:'u3',text:'Closed'}],signatures:[]};
+  const v3={id:nextId('DEV'),title:'Uncontrolled spreadsheet used for dose calculation',classification:'Major',area:'Data integrity',status:'Open',reporter:'u4',owner:'u1',occurred:t(-41),detected:t(-40),cr:null,
+    description:'Pharmacy staff used a local Excel workbook instead of LabTrack LIMS for 3 pediatric dose calculations.',immediate:'',impact:'',rcCategory:'',rootCause:'',capa:'',bugs:[],history:[{at:t(-40),by:'u4',text:'Reported'}],signatures:[]};
+  sg(v2,'u2','Investigation complete','Root cause and CAPA documented',-45);sg(v2,'u3','QA approved — deviation closed','CAPA implemented',-44);
+  S.deviations.push(v1,v2,v3);
+  at(-49,()=>audit('Deviation reported',v2.id,v2.title,'u3'));at(-45,()=>audit('E-signed (Investigation complete)',v2.id,'','u2'));at(-44,()=>audit('E-signed (QA approved — deviation closed)',v2.id,'','u3'));
+  at(-40,()=>audit('Deviation reported',v3.id,v3.title,'u4'));at(-5,()=>audit('Deviation reported',v1.id,v1.title,'u2'));at(-4,()=>audit('Status → Investigation',v1.id,'','u1'))}
+function upgradeWorkspace(){if(S.deviations&&S.training)return;S.deviations=S.deviations||[];S.training=S.training||[];
+  if(S.system&&S.system.org==='Northwind Biologics'&&S.docs.some(d=>d.id==='DOC-0007')){const t=d=>new Date(Date.now()+d*DAY).toISOString();seedQuality(t,(d,fn)=>fn())}
+  audit('Workspace upgraded','SYSTEM','Training & deviation modules added (v'+APP_VERSION+')');save()}
+
 /* ---------- shell, router, events ---------- */
 function applyTheme(){const r=document.documentElement;r.classList.remove('light','dark');if(S.theme==='light')r.classList.add('light');if(S.theme==='dark')r.classList.add('dark');$('meta[name=theme-color]')?.setAttribute('content',r.classList.contains('dark')||(!r.classList.contains('light')&&matchMedia('(prefers-color-scheme: dark)').matches)?'#0d1020':'#4f46e5')}
 function parseHash(){const h=location.hash.replace(/^#\/?/,'')||'dashboard';const [path,q]=h.split('?');const [r,id]=path.split('/');return {r,id:id?decodeURIComponent(id):null,q:new URLSearchParams(q||'')}}
-const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
+const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,deviations:vDeviations,dev:vDeviation,training:vTraining,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
 let lastRoute='';
 function render(){const p=parseHash();const fn=VIEWS[p.r]||vDashboard;let v;
   try{v=fn(p)}catch(e){console.error(e);v={title:'Error',html:`<div class="card"><b>Something went wrong rendering this view.</b><pre class="codebox">${esc(e.stack||e)}</pre></div>`}}
-  const sec=SECTION[p.r]||p.r;const cnt={docs:S.docs.filter(d=>d.status==='In Review').length,changes:S.changes.filter(openCR).length,defects:S.defects.filter(openBug).length};
+  const sec=SECTION[p.r]||p.r;const cnt={docs:S.docs.filter(d=>d.status==='In Review').length,changes:S.changes.filter(openCR).length,defects:S.defects.filter(openBug).length,deviations:S.deviations.filter(openDev).length,training:trainingGaps(S.currentUser).length};
   $('#nav').innerHTML=NAV.map(([r,i,l],k)=>`${k===5?'<div class="sec">Quality system</div>':k===0?'<div class="sec">Workspace</div>':''}<a href="#/${r}" class="${sec===r?'on':''}"><span class="ic">${i}</span>${l}${cnt[r]?`<span class="cnt">${cnt[r]}</span>`:''}</a>`).join('');
-  const moreOn=['trace','code','audit','settings','more'].includes(sec);
+  const moreOn=!NAV.slice(0,5).some(n=>n[0]===sec);
   $('#tabbar').innerHTML=NAV.slice(0,5).map(([r,i,l,s])=>`<a href="#/${r}" class="${sec===r?'on':''}"><span class="ic">${i}</span>${s}</a>`).join('')+`<a href="#/more" class="${moreOn?'on':''}"><span class="ic">⋯</span>More</a>`;
   $('#crumb').innerHTML=(v.back?`<a href="${v.back}" class="btn ghost sm" style="margin-right:4px">‹</a>`:'')+esc(v.title||'');
   $('#user').innerHTML=`${avatar(S.currentUser)}<select data-chg="user" aria-label="Active user">${S.users.map(u=>`<option value="${u.id}" ${u.id===S.currentUser?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`;
@@ -1203,7 +1306,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.ke
 window.addEventListener('hashchange',()=>{closeModal();render()});
 window.addEventListener('storage',e=>{if(e.key===STORE_KEY&&load())render()});
 window.addEventListener('online',()=>toast('Back online'));window.addEventListener('offline',()=>toast('Offline — everything keeps working'));
-(function init(){if(!load()||!S.audit)seed();applyTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',applyTheme);$('#ver').textContent='v'+APP_VERSION;render();
+(function init(){if(!load()||!S.audit)seed();else upgradeWorkspace();applyTheme();matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',applyTheme);$('#ver').textContent='v'+APP_VERSION;render();
   if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})})();
 </script>
 </body>

@@ -178,6 +178,7 @@ function bugModal(pre){pre=pre||{};const m=modal('Raise defect / deviation',`<la
   <label class="f">Description<textarea class="inp" id="nbD">${esc(pre.description||'')}</textarea></label><div class="fields"><label class="f">Expected<input class="inp" id="nbE" value="${esc(pre.expected||'')}"></label><label class="f">Actual<input class="inp" id="nbX" value="${esc(pre.actual||'')}"></label></div>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="nbGo">Raise</button>`);
   $('#nbGo',m).onclick=()=>{const title=val('nbT',m).trim();if(!title){toast('Title required');return}const id=nextId('BUG');
     S.defects.unshift({id,title,severity:val('nbS',m),gxp:val('nbG',m),status:'Open',reporter:S.currentUser,assignee:val('nbA',m),created:nowISO(),found:pre.found||'Manual report',run:pre.run||null,tc:val('nbC',m)||null,cr:val('nbR',m)||null,description:val('nbD',m),steps:'',expected:val('nbE',m),actual:val('nbX',m),rcCategory:'',rootCause:'',fix:'',capa:{corrective:'',preventive:'',effectiveness:''},history:[{at:nowISO(),by:S.currentUser,text:'Raised'+(pre.run?' from '+pre.run:'')}],signatures:[]});
+    if(pre.dev){const v=S.deviations.find(x=>x.id===pre.dev);if(v){v.bugs.push(id);hist(v,'Linked '+id);audit('CAPA linked',v.id,id)}}
     audit('Defect raised',id,title);save();closeModal();location.hash='#/defect/'+id}}
 ACT.bugNew=b=>bugModal(b&&b.dataset&&b.dataset.cr?{cr:b.dataset.cr}:{});
 const curBug=()=>S.defects.find(x=>x.id===parseHash().id);

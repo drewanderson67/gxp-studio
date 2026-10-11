@@ -3,7 +3,7 @@
 import pathlib, re
 root = pathlib.Path(__file__).parent
 src = root / 'src'
-order = ['core.js', 'runner.js', 'migrate.js', 'seed.js', 'views1.js', 'views2.js', 'main.js']
+order = ['core.js', 'runner.js', 'migrate.js', 'seed.js', 'views1.js', 'views2.js', 'views3.js', 'main.js']
 js = '\n'.join((src / f).read_text() for f in order)
 css = (src / 'style.css').read_text()
 html = (src / 'index.tpl.html').read_text()

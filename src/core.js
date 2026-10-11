@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.0.0';
+const APP_VERSION='1.1.0';
 const STORE_KEY='gxps.v1';
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -33,8 +33,8 @@ const userName=id=>(S.users.find(u=>u.id===id)||{name:id||'—'}).name;
 const userColor=id=>({u1:'#4f46e5',u2:'#0f9d6b',u3:'#d23a4a',u4:'#c27a00'}[id]||'#7c3aed');
 const initials=n=>String(n).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
 const avatar=id=>`<span class="av" style="background:${userColor(id)}">${initials(userName(id))}</span>`;
-const findAny=id=>{if(!id)return null;const p=id.split('-')[0];const col={DOC:'docs',REQ:'reqs',TC:'tests',TR:'runs',CR:'changes',BUG:'defects',CAPA:'defects',CV:'code'}[p];return col?S[col].find(x=>x.id===id):null};
-const routeFor=id=>{const p=String(id).split('-')[0];return {DOC:'#/doc/',REQ:'#/trace?req=',TC:'#/test/',TR:'#/run/',CR:'#/change/',BUG:'#/defect/',CV:'#/code/'}[p]+id};
+const findAny=id=>{if(!id)return null;const p=id.split('-')[0];const col={DOC:'docs',REQ:'reqs',TC:'tests',TR:'runs',CR:'changes',BUG:'defects',CAPA:'defects',CV:'code',DEV:'deviations',TRN:'training'}[p];return col?S[col].find(x=>x.id===id):null};
+const routeFor=id=>{const p=String(id).split('-')[0];return {DOC:'#/doc/',REQ:'#/trace?req=',TC:'#/test/',TR:'#/run/',CR:'#/change/',BUG:'#/defect/',CV:'#/code/',DEV:'#/dev/',TRN:'#/training?r='}[p]+id};
 const link=id=>id?`<a href="${routeFor(id)}" class="mono">${esc(id)}</a>`:'—';
 
 /* ---------- audit trail (hash chained) ---------- */
@@ -54,17 +54,18 @@ function modal(title,body,foot,wide){closeModal();const s=document.createElement
 function closeModal(){$$('.scrim').forEach(x=>x.remove())}
 /* two-click confirm (no confirm() — blocked in preview iframes) */
 function armed(btn,fn,label='Click again to confirm'){if(btn.classList.contains('armed')){fn();return}const o=btn.innerHTML;btn.classList.add('armed');btn.textContent=label;setTimeout(()=>{if(btn.isConnected){btn.classList.remove('armed');btn.innerHTML=o}},3500)}
-const statusTone=s=>({Draft:'',New:'',Open:'bad','In Review':'warn',Reviewed:'info',Approved:'info',Effective:'ok',Superseded:'',Retired:'',Assessed:'warn',Implemented:'info',Verified:'ok',Closed:'ok',Rejected:'bad',Investigating:'warn','Fix In Progress':'info','Ready for Verification':'brand',Pass:'ok',Fail:'bad',Error:'warn',Baseline:'ok',Candidate:'brand',Released:'ok',Critical:'bad',Major:'warn',Minor:'info',High:'bad',Medium:'warn',Low:'ok'}[s]||'');
+const statusTone=s=>({Draft:'',New:'',Open:'bad','In Review':'warn',Reviewed:'info',Approved:'info',Effective:'ok',Superseded:'',Retired:'',Assessed:'warn',Implemented:'info',Verified:'ok',Closed:'ok',Rejected:'bad',Investigating:'warn','Fix In Progress':'info','Ready for Verification':'brand',Pass:'ok',Fail:'bad',Error:'warn',Baseline:'ok',Candidate:'brand',Released:'ok',Critical:'bad',Major:'warn',Minor:'info',High:'bad',Medium:'warn',Low:'ok',Investigation:'warn','QA Review':'brand',Current:'ok',Due:'warn',Overdue:'bad'}[s]||'');
 const pill=(s,t)=>`<span class="pill ${t??statusTone(s)}">${esc(s)}</span>`;
 const stepper=(flow,cur)=>{const i=flow.indexOf(cur);return `<div class="steps">${flow.map((f,k)=>`<span class="${k<i?'done':k===i?'cur':''}">${k<i?'✓ ':''}${esc(f)}</span>`).join('')}</div>`};
 function blobLink(text,name,type,label,cls='btn'){const u=URL.createObjectURL(new Blob([text],{type}));return `<a class="${cls}" href="${u}" download="${esc(name)}">${label}</a>`}
 
 /* ---------- e-signature (21 CFR Part 11 style) ---------- */
-function esign({record,meanings,title,onSign,requireReason=true}){
+function esign({record,meanings,title,onSign,requireReason=true,attach=true}){
   const u=me();
   const m=modal(title||'Electronic signature',`
     <div class="small muted">By signing, you confirm this electronic signature is the legally binding equivalent of your handwritten signature (21 CFR 11.100).</div>
     <div class="kv"><dt>Record</dt><dd class="mono">${esc(record.id)} · ${esc(record.title||'')}</dd><dt>Signer</dt><dd>${esc(u.name)} (${esc(u.role)})</dd><dt>Record hash</dt><dd class="hashv">${recordHash(record)}</dd></div>
+    ${typeof trainingWarn==='function'?trainingWarn(u.id):''}
     <label class="f">Meaning of signature<select class="inp" id="sgM">${meanings.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>
     <label class="f">Reason / comment ${requireReason?'(required)':''}<input class="inp" id="sgR" placeholder="e.g. Reviewed against SOP-QA-012"></label>
     <label class="f">Re-enter password / PIN<input class="inp" id="sgP" type="password" autocomplete="off" inputmode="numeric" placeholder="Demo PIN for every user: 1234"></label>
@@ -75,7 +76,7 @@ function esign({record,meanings,title,onSign,requireReason=true}){
     if(requireReason&&!reason){$('#sgE',m).textContent='A reason is required.';return}
     const sig={by:u.id,name:u.name,role:u.role,meaning,reason,at:nowISO(),version:record.version||null,hash:recordHash(record)};
     sig.sigHash=sha256(JSON.stringify(sig));
-    (record.signatures=record.signatures||[]).push(sig);
+    if(attach)(record.signatures=record.signatures||[]).push(sig);
     audit('E-signed ('+meaning+')',record.id,reason);
     closeModal();onSign&&onSign(sig);save();render()};
 }
