@@ -182,7 +182,7 @@ function seed(){
   S={v:1,app:APP_VERSION,created:nowISO(),seq:{},currentUser:'u1',theme:'auto',
     users:[{id:'u1',name:'Alex Rivera',role:'Developer',roles:['Author'],pin:'1234'},{id:'u2',name:'Priya Shah',role:'QA Tester',roles:['Tester'],pin:'1234'},{id:'u3',name:'Morgan Lee',role:'QA Approver',roles:['QA'],pin:'1234'},{id:'u4',name:'Sam Okafor',role:'System Owner',roles:['Owner'],pin:'1234'}],
     system:{name:'LabTrack LIMS',org:'Northwind Biologics',gamp:'Category 5 — custom code',site:'Boston (BOS)'},
-    docs:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};
+    docs:[],deviations:[],training:[],reqs:[],tests:[],runs:[],changes:[],defects:[],code:[],audit:[]};
   const ev=[];const at=(d,fn)=>ev.push({d,fn});
   const sig=(rec,uid,meaning,reason,d)=>{const u=S.users.find(x=>x.id===uid);const s={by:uid,name:u.name,role:u.role,meaning,reason,at:t(d),version:rec.version||null,hash:recordHash(rec)};s.sigHash=sha256(JSON.stringify(s));(rec.signatures=rec.signatures||[]).push(s)};
 
@@ -303,6 +303,7 @@ function seed(){
   at(-15,()=>audit('Defect raised',b3.id,b3.title,'u3'));at(-1,()=>audit('Defect raised',b1.id,b1.title,'u2'));
   cr1.defects=[b1.id];
 
+  seedQuality(t,at);
   ev.sort((a,b)=>a.d-b.d).forEach(e=>{S._clock=t(e.d);e.fn()});delete S._clock;
   audit('Workspace initialised','SYSTEM','Demo data loaded (v'+APP_VERSION+')','u4');
   save();
