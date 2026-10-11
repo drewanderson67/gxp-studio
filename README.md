@@ -7,3 +7,4 @@ Offline-first PWA for GxP computerized-system work: controlled documents, change
 - Serve: `python3 -m http.server 8080`. Data lives in `localStorage` (`gxps.v1`); demo e-signature PIN is `1234`.
 
 Demo workspace (fictional): Northwind Biologics · LabTrack LIMS. Prototype only — not a validated system.
+- Tests: serve on :8080, then `python3 tests/e2e.py [cdp_url]` (Python Playwright; desktop + mobile flows, exits non-zero on failure).
