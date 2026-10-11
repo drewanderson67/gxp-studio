@@ -233,7 +233,7 @@ table.t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:t
 <nav class="tabbar" id="tabbar"></nav>
 <button class="fab" id="fab" aria-label="New">+</button>
 <script>'use strict';
-const APP_VERSION='1.1.0';
+const APP_VERSION='1.2.0';
 const STORE_KEY='gxps.v1';
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -748,7 +748,7 @@ function seed(){
 /* ---------- shared view logic ---------- */
 const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null,devF:'Open',devQ:''};
 const ACT={},CHG={};
-const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['deviations','△','Deviations'],['training','◎','Training'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
+const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['deviations','△','Deviations'],['training','◎','Training'],['validation','✔','Validation'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
 const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests',dev:'deviations'};
 const hasRole=r=>me().roles.includes(r);
 const isQA=()=>hasRole('QA');
@@ -873,7 +873,7 @@ function vDoc(p){const d=S.docs.find(x=>x.id===p.id);if(!d)return {title:'Not fo
     <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" data-act="tab" data-k="doc" data-v="view">Preview</button><button class="btn pri" data-act="docSave">Save draft</button></div></div>`;
   else if(tab==='sig')body=`<div class="card">${sigsHTML(d)}</div>`;
   else if(tab==='hist')body=`<div class="card">${histHTML(d.history)}</div>`;
-  else body=`<div class="docpaper">${docHead(d)}${md(d.content)}${(d.signatures||[]).length?`<h2>Signature manifest</h2>${d.signatures.map(sigBlock).join('')}`:''}</div>`;
+  else body=`${vsrBanner(d)}<div class="docpaper">${docHead(d)}${md(d.content)}${(d.signatures||[]).length?`<h2>Signature manifest</h2>${d.signatures.map(sigBlock).join('')}`:''}</div>`;
   return {title:d.id,back:'#/docs',html:`<div class="doc" style="max-width:none">
     <div class="ph"><div class="t"><div class="row"><span class="mono muted">${d.id}</span>${pill(d.status)}<span class="pill brand">${esc(DOC_TYPES[d.type]||d.type)}</span><span class="pill">v${esc(d.version)}</span></div><h1 style="margin-top:6px">${esc(d.title)}</h1>
     <p>Owner ${esc(userName(d.owner))} · updated ${ago(d.updated)}${d.reviewDue?` · periodic review due ${fmtD(d.reviewDue)}`:''}${reviewed&&d.status==='In Review'?' · <b style="color:var(--ok)">reviewed</b>':''}</p>${stepper(DOC_FLOW,d.status==='Retired'||d.status==='Superseded'?'Effective':d.status)}</div></div>
@@ -887,6 +887,7 @@ ACT.docReview=()=>{const d=curDoc();if(!guard(d.owner!==S.currentUser,'Segregati
   esign({record:d,meanings:['Reviewed'],title:'Review signature',onSign:()=>hist(d,'Reviewed by '+me().name)})};
 ACT.docApprove=()=>{const d=curDoc();if(!guard(isQA(),'Only users with the QA role can approve. Switch to Morgan Lee (QA Approver).'))return;if(!guard(d.owner!==S.currentUser,'Segregation of duties: owner cannot approve own document.'))return;
   if(!guard(sigsAt(d,'Reviewed').length>0,'A review signature is required before QA approval.'))return;
+  const vb=vsrBlock(d);if(!guard(!vb,vb))return;
   esign({record:d,meanings:['Approved'],title:'QA approval signature',onSign:()=>{d.status='Approved';d.updated=nowISO();hist(d,'Approved');audit('Status → Approved',d.id,'v'+d.version)}})};
 ACT.docReturn=()=>{const d=curDoc();const m=modal('Return to draft',`<label class="f">Reason (recorded in audit trail)<textarea class="inp" id="rr"></textarea></label>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="rrGo">Return</button>`);$('#rrGo',m).onclick=()=>{const r=val('rr',m).trim();if(!r){toast('Reason required');return}d.status='Draft';hist(d,'Returned to draft: '+r);audit('Returned to draft',d.id,r);save();closeModal();render()}};
 ACT.docEffective=()=>{const d=curDoc();if(!guard(isQA(),'Only QA can make a document effective.'))return;const [M,m]=d.version.split('.').map(Number);if(m)d.version=`${M+1}.0`;
@@ -1279,10 +1280,56 @@ function upgradeWorkspace(){if(S.deviations&&S.training)return;S.deviations=S.de
   if(S.system&&S.system.org==='Northwind Biologics'&&S.docs.some(d=>d.id==='DOC-0007')){const t=d=>new Date(Date.now()+d*DAY).toISOString();seedQuality(t,(d,fn)=>fn())}
   audit('Workspace upgraded','SYSTEM','Training & deviation modules added (v'+APP_VERSION+')');save()}
 
+/* ---------- validation summary ---------- */
+const VSR_OK='Fit for intended use',VSR_EXC='Fit for intended use with exceptions',VSR_NO='Not fit for intended use — release blocked';
+const vcell=s=>String(s??'').replace(/\|/g,'/').replace(/\n/g,' ');
+function vsrAssess(){const C=[];const add=(ok,block,label,detail)=>C.push({ok,sev:ok?'ok':block?'block':'warn',label,detail:detail||''});
+  const a=verifyAudit();add(a.ok,true,a.ok?'Audit trail hash chain intact':`Audit trail broken at entry #${a.at}`);
+  ['VP','URS'].forEach(t=>{const ds=S.docs.filter(d=>d.type===t);const ok=ds.some(d=>['Approved','Effective'].includes(d.status));add(ok,true,`${DOC_TYPES[t]} approved`,ok?'':ds.map(d=>`${d.id} is ${d.status}`).join(', ')||'none on file')});
+  const rs=S.reqs.map(r=>[r,reqState(r)]),bad=rs.filter(([,s])=>s.k!=='pass');
+  add(!bad.length,true,`Requirements verified (${rs.length-bad.length}/${rs.length})`,bad.map(([r,s])=>`${r.id} ${s.label}`).join(', '));
+  const latest=[...new Set(S.tests.map(t=>latestResult(t.id)).filter(Boolean).map(x=>x.run))],unrev=latest.filter(r=>!sigsAt(r,'Reviewed').length);
+  add(!unrev.length,true,`Current test evidence independently reviewed (${latest.length-unrev.length}/${latest.length} runs)`,unrev.map(r=>r.id).join(', '));
+  const ob=S.defects.filter(openBug),obB=ob.filter(d=>d.gxp==='High'||['Critical','Major'].includes(d.severity));
+  add(!ob.length,obB.length>0,ob.length?`${ob.length} open defect${ob.length>1?'s':''}${obB.length?` (${obB.length} GxP-critical/major)`:''}`:'No open defects',ob.map(d=>`${d.id} ${d.severity}`).join(', '));
+  const od=S.deviations.filter(openDev),odB=od.filter(v=>v.classification!=='Minor');
+  add(!od.length,odB.length>0,od.length?`${od.length} open deviation${od.length>1?'s':''}${odB.length?` (${odB.length} major/critical)`:''}`:'No open deviations',od.map(v=>`${v.id} ${v.classification}`).join(', '));
+  let tO=0,tD=0;S.users.forEach(u=>trainingGaps(u.id).forEach(([,s])=>s.k==='Overdue'?tO++:tD++));
+  add(!tO&&!tD,tO>0,tO||tD?`Training gaps: ${tO} overdue, ${tD} due`:'All personnel trained on effective SOPs');
+  const oc=S.changes.filter(openCR);add(!oc.length,false,oc.length?`${oc.length} change control${oc.length>1?'s':''} still open`:'No open change controls',oc.map(c=>`${c.id} ${c.status}`).join(', '));
+  const verdict=C.some(c=>c.sev==='block')?VSR_NO:C.some(c=>c.sev==='warn')?VSR_EXC:VSR_OK;
+  return {checks:C,verdict,basis:sha256(JSON.stringify(C.map(c=>[c.sev,c.label,c.detail]))),rs,latest,ob,od,oc,tO,tD,audit:a}}
+const verdictTone=v=>v===VSR_OK?'ok':v===VSR_EXC?'warn':'bad';
+const sevIcon=s=>s==='ok'?'<span class="res pass">✓</span>':s==='block'?'<span class="res fail">✕</span>':'<span class="res err">!</span>';
+function vsrMarkdown(A){const sys=S.system,r=A.rs;
+  return `# Validation Summary Report — ${sys.name}\n\n| Field | Value |\n|---|---|\n| System | ${sys.name} |\n| Organisation / site | ${sys.org} · ${sys.site} |\n| GAMP 5 category | ${sys.gamp} |\n| Prepared by | ${userName(S.currentUser)} |\n| Generated | ${fmtUTC(nowISO())} |\n| Data basis sha256 | ${A.basis} |\n| Audit trail head | ${A.audit.head||'BROKEN'} |\n\n`+
+  `## 1. Conclusion\n**${A.verdict}.**\n\n`+A.checks.map(c=>`- ${c.ok?'✓':c.sev==='block'?'✕ BLOCKER —':'! EXCEPTION —'} ${c.label}${c.detail?` (${c.detail})`:''}`).join('\n')+
+  `\n\n## 2. Scope\nThis report summarises the validation status of ${sys.name} against the approved Validation Plan and URS, per GAMP 5 and EU GMP Annex 11 §4. It covers requirements, test execution, defects, deviations, training and open changes at the time of generation.\n\n`+
+  `## 3. Requirements traceability\n| Requirement | Description | GxP | Risk (RPN) | Test cases | Status |\n|---|---|---|---|---|---|\n`+r.map(([q,s])=>`| ${q.id} | ${vcell(q.text)} | ${q.gxp} | ${riskClass(rpn(q))} (${rpn(q)}) | ${s.tcs.map(t=>t.id).join(', ')||'—'} | **${s.label}** |`).join('\n')+
+  `\n\n## 4. Test execution evidence\n| Run | Target | Executed | Result | Reviewed by |\n|---|---|---|---|---|\n`+(A.latest.map(x=>{const p=x.results.filter(z=>z.status==='Pass').length,rv=sigsAt(x,'Reviewed')[0];return `| ${x.id} | ${vcell(x.codeLabel)} | ${userName(x.by)} · ${fmtD(x.at)} | ${p}/${x.results.length} pass | ${rv?rv.name:'**not reviewed**'} |`}).join('\n')||'| — | | | | |')+
+  `\n\n## 5. Open defects\n`+(A.ob.length?`| Defect | Title | Severity | GxP | Status |\n|---|---|---|---|---|\n`+A.ob.map(d=>`| ${d.id} | ${vcell(d.title)} | ${d.severity} | ${d.gxp} | ${d.status} |`).join('\n'):'None.')+
+  `\n\n## 6. Deviations\n`+(S.deviations.length?`| Deviation | Title | Class | Status |\n|---|---|---|---|\n`+S.deviations.map(v=>`| ${v.id} | ${vcell(v.title)} | ${v.classification} | ${v.status} |`).join('\n'):'None.')+
+  `\n\n## 7. Training\n${A.tO||A.tD?`${A.tO} overdue and ${A.tD} due read-and-understood assignments.`:'All personnel are trained on the current effective SOPs and policies.'}\n\n`+
+  `## 8. Open change controls\n`+(A.oc.length?A.oc.map(c=>`- ${c.id} ${vcell(c.title)} (${c.status})`).join('\n'):'None.')+
+  `\n\n## 9. Release decision\n${A.verdict===VSR_NO?'The system must NOT be released for GxP use until all blockers above are resolved and this report is regenerated.':A.verdict===VSR_EXC?'The system may be released for GxP use subject to QA acceptance of the listed exceptions.':'The system is released for its intended GxP use.'}`}
+function vsrBlock(d){if(!d.vsr)return '';if(d.vsr.verdict===VSR_NO)return 'This VSR concludes the system is not fit for use — it cannot be approved. Resolve the blockers and regenerate.';
+  if(d.vsr.basis!==vsrAssess().basis)return 'Validation data has changed since this VSR was generated. Regenerate it before approval.';return ''}
+function vsrBanner(d){if(!d.vsr)return '';const stale=['Draft','In Review'].includes(d.status)&&d.vsr.basis!==vsrAssess().basis;
+  return `<div class="card noprint" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>Verdict</b>${pill(d.vsr.verdict,verdictTone(d.vsr.verdict))}${stale?`<span class="small" style="color:var(--warn)">⚠ Data changed since generation — <a href="#/validation">regenerate</a></span>`:''}</div>`}
+ACT.vsrGen=()=>{const A=vsrAssess(),id=nextId('DOC');
+  S.docs.unshift({id,type:'VSR',title:`Validation Summary Report — ${S.system.name}`,version:'0.1',status:'Draft',owner:S.currentUser,content:vsrMarkdown(A),created:nowISO(),updated:nowISO(),vsr:{verdict:A.verdict,basis:A.basis,at:nowISO()},history:[{at:nowISO(),by:S.currentUser,text:'Generated — '+A.verdict}],signatures:[]});
+  audit('Document generated',id,'VSR: '+A.verdict);save();UI.tabs.doc='view';location.hash='#/doc/'+id};
+function vValidation(){const A=vsrAssess(),vs=S.docs.filter(d=>d.type==='VSR');const n=k=>A.checks.filter(c=>c.sev===k).length;
+  return {title:'Validation',html:`<div class="ph"><div class="t"><h1>Validation status</h1><p>Live release assessment for ${esc(S.system.name)} (GAMP 5 · Annex 11 §4). Generate a Validation Summary Report to freeze it as a controlled document for review and QA approval.</p></div><button class="btn pri" data-act="vsrGen">▤ Generate VSR</button></div>
+  <div class="card" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><div class="small muted">Current verdict</div><div style="font-size:20px;font-weight:700;margin-top:4px;color:var(--${verdictTone(A.verdict)==='ok'?'ok':verdictTone(A.verdict)==='warn'?'warn':'bad'})">${esc(A.verdict)}</div></div>
+    ${pill(n('block')+' blocker'+(n('block')===1?'':'s'),n('block')?'bad':'ok')}${pill(n('warn')+' exception'+(n('warn')===1?'':'s'),n('warn')?'warn':'ok')}${pill(n('ok')+' passed','ok')}</div>
+  <div class="card"><h2>Release criteria</h2>${A.checks.map(c=>`<div class="chk" style="align-items:flex-start">${sevIcon(c.sev)}<div style="flex:1"><div>${esc(c.label)}${c.sev==='block'?' <span class="small" style="color:var(--bad);font-weight:600">BLOCKER</span>':''}</div>${c.detail?`<div class="small muted">${c.detail.split(', ').map(x=>x.replace(/^([A-Z]+-\d{4})/,(m)=>link(m))).join(', ')}</div>`:''}</div></div>`).join('')}</div>
+  <div class="card p0 list"><div style="padding:14px 16px 6px"><h2 style="margin:0">Validation Summary Reports</h2></div>${vs.map(d=>`<a class="item" href="#/doc/${d.id}"><span class="id">${d.id}</span><div class="main1"><div class="ttl">${esc(d.title)}</div><div class="meta"><span>v${esc(d.version)}</span><span>${esc(userName(d.owner))}</span><span>${ago(d.created)}</span></div></div>${d.vsr?pill(d.vsr.verdict===VSR_NO?'Blocked':d.vsr.verdict===VSR_EXC?'With exceptions':'Fit for use',verdictTone(d.vsr.verdict)):''}${pill(d.status)}</a>`).join('')||'<div class="empty">No VSR generated yet.</div>'}</div>`}}
+
 /* ---------- shell, router, events ---------- */
 function applyTheme(){const r=document.documentElement;r.classList.remove('light','dark');if(S.theme==='light')r.classList.add('light');if(S.theme==='dark')r.classList.add('dark');$('meta[name=theme-color]')?.setAttribute('content',r.classList.contains('dark')||(!r.classList.contains('light')&&matchMedia('(prefers-color-scheme: dark)').matches)?'#0d1020':'#4f46e5')}
 function parseHash(){const h=location.hash.replace(/^#\/?/,'')||'dashboard';const [path,q]=h.split('?');const [r,id]=path.split('/');return {r,id:id?decodeURIComponent(id):null,q:new URLSearchParams(q||'')}}
-const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,deviations:vDeviations,dev:vDeviation,training:vTraining,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
+const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,deviations:vDeviations,dev:vDeviation,training:vTraining,validation:vValidation,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
 let lastRoute='';
 function render(){const p=parseHash();const fn=VIEWS[p.r]||vDashboard;let v;
   try{v=fn(p)}catch(e){console.error(e);v={title:'Error',html:`<div class="card"><b>Something went wrong rendering this view.</b><pre class="codebox">${esc(e.stack||e)}</pre></div>`}}

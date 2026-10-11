@@ -1,7 +1,7 @@
 /* ---------- shell, router, events ---------- */
 function applyTheme(){const r=document.documentElement;r.classList.remove('light','dark');if(S.theme==='light')r.classList.add('light');if(S.theme==='dark')r.classList.add('dark');$('meta[name=theme-color]')?.setAttribute('content',r.classList.contains('dark')||(!r.classList.contains('light')&&matchMedia('(prefers-color-scheme: dark)').matches)?'#0d1020':'#4f46e5')}
 function parseHash(){const h=location.hash.replace(/^#\/?/,'')||'dashboard';const [path,q]=h.split('?');const [r,id]=path.split('/');return {r,id:id?decodeURIComponent(id):null,q:new URLSearchParams(q||'')}}
-const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,deviations:vDeviations,dev:vDeviation,training:vTraining,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
+const VIEWS={dashboard:vDashboard,docs:vDocs,doc:vDoc,changes:vChanges,change:vChange,defects:vDefects,defect:vDefect,tests:vTests,test:vTest,run:vRun,trace:vTrace,deviations:vDeviations,dev:vDeviation,training:vTraining,validation:vValidation,code:vCode,audit:vAudit,settings:vSettings,more:vMore};
 let lastRoute='';
 function render(){const p=parseHash();const fn=VIEWS[p.r]||vDashboard;let v;
   try{v=fn(p)}catch(e){console.error(e);v={title:'Error',html:`<div class="card"><b>Something went wrong rendering this view.</b><pre class="codebox">${esc(e.stack||e)}</pre></div>`}}

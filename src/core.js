@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.1.0';
+const APP_VERSION='1.2.0';
 const STORE_KEY='gxps.v1';
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];

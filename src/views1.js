@@ -1,7 +1,7 @@
 /* ---------- shared view logic ---------- */
 const UI={docF:'All',docQ:'',docT:'',crF:'Open',crQ:'',bugF:'Open',bugQ:'',tcQ:'',tcT:'All',tcSel:new Set(),tcTarget:'',auditQ:'',auditU:'',traceF:'All',tabs:{},verify:null,devF:'Open',devQ:''};
 const ACT={},CHG={};
-const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['deviations','△','Deviations'],['training','◎','Training'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
+const NAV=[['dashboard','◉','Dashboard','Home'],['docs','▤','Documents','Docs'],['changes','⇄','Change Control','Changes'],['defects','✱','Defects & CAPA','Defects'],['tests','▶','Test Automation','Tests'],['deviations','△','Deviations'],['training','◎','Training'],['validation','✔','Validation'],['trace','⊞','Traceability'],['code','{}','Code Baselines'],['audit','≡','Audit Trail'],['settings','⚙','Settings']];
 const SECTION={doc:'docs',change:'changes',defect:'defects',test:'tests',run:'tests',dev:'deviations'};
 const hasRole=r=>me().roles.includes(r);
 const isQA=()=>hasRole('QA');
@@ -126,7 +126,7 @@ function vDoc(p){const d=S.docs.find(x=>x.id===p.id);if(!d)return {title:'Not fo
     <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" data-act="tab" data-k="doc" data-v="view">Preview</button><button class="btn pri" data-act="docSave">Save draft</button></div></div>`;
   else if(tab==='sig')body=`<div class="card">${sigsHTML(d)}</div>`;
   else if(tab==='hist')body=`<div class="card">${histHTML(d.history)}</div>`;
-  else body=`<div class="docpaper">${docHead(d)}${md(d.content)}${(d.signatures||[]).length?`<h2>Signature manifest</h2>${d.signatures.map(sigBlock).join('')}`:''}</div>`;
+  else body=`${vsrBanner(d)}<div class="docpaper">${docHead(d)}${md(d.content)}${(d.signatures||[]).length?`<h2>Signature manifest</h2>${d.signatures.map(sigBlock).join('')}`:''}</div>`;
   return {title:d.id,back:'#/docs',html:`<div class="doc" style="max-width:none">
     <div class="ph"><div class="t"><div class="row"><span class="mono muted">${d.id}</span>${pill(d.status)}<span class="pill brand">${esc(DOC_TYPES[d.type]||d.type)}</span><span class="pill">v${esc(d.version)}</span></div><h1 style="margin-top:6px">${esc(d.title)}</h1>
     <p>Owner ${esc(userName(d.owner))} · updated ${ago(d.updated)}${d.reviewDue?` · periodic review due ${fmtD(d.reviewDue)}`:''}${reviewed&&d.status==='In Review'?' · <b style="color:var(--ok)">reviewed</b>':''}</p>${stepper(DOC_FLOW,d.status==='Retired'||d.status==='Superseded'?'Effective':d.status)}</div></div>
@@ -140,6 +140,7 @@ ACT.docReview=()=>{const d=curDoc();if(!guard(d.owner!==S.currentUser,'Segregati
   esign({record:d,meanings:['Reviewed'],title:'Review signature',onSign:()=>hist(d,'Reviewed by '+me().name)})};
 ACT.docApprove=()=>{const d=curDoc();if(!guard(isQA(),'Only users with the QA role can approve. Switch to Morgan Lee (QA Approver).'))return;if(!guard(d.owner!==S.currentUser,'Segregation of duties: owner cannot approve own document.'))return;
   if(!guard(sigsAt(d,'Reviewed').length>0,'A review signature is required before QA approval.'))return;
+  const vb=vsrBlock(d);if(!guard(!vb,vb))return;
   esign({record:d,meanings:['Approved'],title:'QA approval signature',onSign:()=>{d.status='Approved';d.updated=nowISO();hist(d,'Approved');audit('Status → Approved',d.id,'v'+d.version)}})};
 ACT.docReturn=()=>{const d=curDoc();const m=modal('Return to draft',`<label class="f">Reason (recorded in audit trail)<textarea class="inp" id="rr"></textarea></label>`,`<button class="btn" data-x>Cancel</button><button class="btn pri" id="rrGo">Return</button>`);$('#rrGo',m).onclick=()=>{const r=val('rr',m).trim();if(!r){toast('Reason required');return}d.status='Draft';hist(d,'Returned to draft: '+r);audit('Returned to draft',d.id,r);save();closeModal();render()}};
 ACT.docEffective=()=>{const d=curDoc();if(!guard(isQA(),'Only QA can make a document effective.'))return;const [M,m]=d.version.split('.').map(Number);if(m)d.version=`${M+1}.0`;
